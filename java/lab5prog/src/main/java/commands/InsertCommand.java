@@ -3,64 +3,52 @@ package commands;
 import city.City;
 import io.CityInputStrategy;
 import io.InputHandler;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Scanner;
 import storage.CityManager;
 
-/**
- * Команда для добавления нового элемента в коллекцию.
- *
- * <p>Эта команда позволяет пользователю добавить новый элемент (город) в коллекцию. Для ввода
- * данных используется {@link InputHandler}, который взаимодействует с пользователем через {@link
- * Scanner} и валидирует введенные данные с помощью {@link validation.validationService}.
- *
- * <p>После успешного ввода данных новый элемент добавляется в коллекцию с помощью {@link
- * CityManager#addCity(City)}.
- *
- * @see Command
- * @see City
- * @see InputHandler
- * @see CityManager
- * @see validation.validationService
- */
-public class InsertCommand implements Command {
+public class InsertCommand implements Command, ScriptAwareCommand {
   private final CityManager cityManager;
   private final Scanner scanner;
+  private BufferedReader scriptReader;
+  private boolean isScriptMode;
+  private final CityInputStrategy cityInputStrategy;
 
-  /**
-   * Создает команду для добавления нового элемента в коллекцию.
-   *
-   * @param cityManager менеджер коллекции городов, который будет использоваться для добавления
-   *     элемента.
-   * @param scanner объект для чтения ввода пользователя.
-   */
   public InsertCommand(CityManager cityManager, Scanner scanner) {
     this.cityManager = cityManager;
     this.scanner = scanner;
+    this.cityInputStrategy = new CityInputStrategy();
   }
 
-  /**
-   * Выполняет команду, добавляя новый элемент в коллекцию.
-   *
-   * <p>Метод использует {@link InputHandler} для ввода данных о новом городе. После успешного ввода
-   * данных элемент добавляется в коллекцию с помощью {@link CityManager#addCity(City)}. В случае
-   * успешного добавления выводится сообщение об успешном выполнении команды.
-   *
-   * @param args аргументы команды (в данной команде не используются).
-   */
+  @Override
+  public void setScriptMode(boolean isScriptMode, BufferedReader scriptReader) {
+    this.isScriptMode = isScriptMode;
+    this.scriptReader = scriptReader;
+  }
+
   @Override
   public void execute(String[] args) {
+    City city = null;
     InputHandler inputHandler = new InputHandler(scanner);
-    CityInputStrategy cityInputStrategy = new CityInputStrategy();
-    City city = inputHandler.inputObject(cityInputStrategy);
-    cityManager.addCity(city);
-    System.out.println("Элемент успешно добавлен.");
+    try {
+      if (isScriptMode) {
+        city = cityInputStrategy.createFromArgs(scriptReader);
+      } else {
+        city = inputHandler.inputObject(cityInputStrategy);
+      }
+
+      if (city != null) {
+        cityManager.addCity(city);
+        System.out.println("Элемент успешно добавлен.");
+      }
+    } catch (IOException e) {
+      System.out.println("Ошибка при чтении данных из скрипта: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
+      System.out.println("Ошибка: " + e.getMessage());
+    }
   }
 
-  /**
-   * Возвращает описание команды.
-   *
-   * @return описание команды.
-   */
   @Override
   public String getDescription() {
     return "добавить новый элемент";

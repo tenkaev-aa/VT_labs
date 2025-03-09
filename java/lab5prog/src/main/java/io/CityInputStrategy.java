@@ -8,74 +8,110 @@ import city.Human;
 import enums.Climate;
 import enums.Government;
 import enums.StandardOfLiving;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class CityInputStrategy implements InputStrategy<City> {
   @Override
-  public City inputObject(Scanner scanner) {
+  public City inputObject(Scanner scanner) throws IOException {
     Builder<City> builder = new CityBuilder();
     System.out.println("Введите данные города:");
 
-    String name = inputString(scanner, "Название: ", "Название не может быть пустым");
-    builder.setName(name);
+    builder.setName(inputString(scanner, "Название: ", "Название не может быть пустым"));
+    builder.setNestedObject(inputCoordinates(scanner));
 
-    Coordinates coordinates = inputCoordinates(scanner);
-    builder.setNestedObject(coordinates);
-
-    Long area =
+    builder.setNumber(
         inputNumber(
                 scanner,
                 "Площадь: ",
                 "Площадь должна быть положительным числом",
                 Long::parseLong,
                 true)
-            .orElseThrow(() -> new IllegalArgumentException("Площадь не может быть пустой"));
-    builder.setNumber(area);
+            .orElseThrow(() -> new IllegalArgumentException("Площадь не может быть пустой")));
 
-    Integer population =
+    builder.setNumber(
         inputNumber(
                 scanner,
                 "Население: ",
                 "Население должно быть положительным числом",
                 Integer::parseInt,
                 true)
-            .orElseThrow(() -> new IllegalArgumentException("Население не может быть пустым"));
-    builder.setNumber(population);
+            .orElseThrow(() -> new IllegalArgumentException("Население не может быть пустым")));
 
-    Optional<Float> metersAboveSeaLevel =
-        inputNumber(
+    inputNumber(
             scanner,
             "Высота над уровнем моря (можно оставить пустым): ",
             null,
             Float::parseFloat,
-            false);
-    metersAboveSeaLevel.ifPresent(builder::setNumber);
+            false)
+        .ifPresent(builder::setNumber);
 
-    Climate climate = inputEnum(scanner, "Выберите климат", Climate.class);
-    builder.setEnum(climate);
+    builder.setEnum(inputEnum(scanner, "Выберите климат", Climate.class));
+    builder.setEnum(inputEnum(scanner, "Выберите тип правительства", Government.class));
+    builder.setEnum(inputEnum(scanner, "Выберите уровень жизни", StandardOfLiving.class));
 
-    Government government = inputEnum(scanner, "Выберите тип правительства", Government.class);
-    builder.setEnum(government);
-
-    StandardOfLiving standardOfLiving =
-        inputEnum(scanner, "Выберите уровень жизни", StandardOfLiving.class);
-    builder.setEnum(standardOfLiving);
-
-    Optional<Human> governor = inputNullableHuman(scanner);
-    governor.ifPresent(builder::setNestedObject);
+    inputNullableHuman(scanner).ifPresent(builder::setNestedObject);
 
     return builder.build();
   }
 
+  public City createFromArgs(BufferedReader reader) throws IOException {
+    Builder<City> builder = new CityBuilder();
+
+    builder.setName(readString(reader, "Ошибка: название не может быть пустым"));
+
+    double x =
+        readNumber(reader, Double::parseDouble, "Ошибка: координата X должна быть числом", 36.0)
+            .orElseThrow(() -> new IllegalArgumentException("Координата X не может быть пустой"));
+    int y =
+        readNumber(reader, Integer::parseInt, "Ошибка: координата Y должна быть числом", null)
+            .orElseThrow(() -> new IllegalArgumentException("Координата Y не может быть пустой"));
+    builder.setNestedObject(new Coordinates(x, y));
+
+    builder.setNumber(
+        readNumber(
+                reader, Long::parseLong, "Ошибка: площадь должна быть положительным числом", null)
+            .orElseThrow(() -> new IllegalArgumentException("Площадь не может быть пустой")));
+
+    builder.setNumber(
+        readNumber(
+                reader,
+                Integer::parseInt,
+                "Ошибка: население должно быть положительным числом",
+                null)
+            .orElseThrow(() -> new IllegalArgumentException("Население не может быть пустым")));
+
+    readNumber(reader, Float::parseFloat, null, null).ifPresent(builder::setNumber);
+
+    builder.setEnum(readEnum(reader, Climate.class, "Ошибка: некорректный климат"));
+    builder.setEnum(readEnum(reader, Government.class, "Ошибка: некорректное правительство"));
+    builder.setEnum(readEnum(reader, StandardOfLiving.class, "Ошибка: некорректный уровень жизни"));
+
+    readNumber(reader, Float::parseFloat, null, null)
+        .ifPresent(height -> builder.setNestedObject(new Human(height)));
+
+    return builder.build();
+  }
+
+  private String readString(BufferedReader reader, String errorMessage) throws IOException {
+    String line;
+    while ((line = reader.readLine()) != null) {
+      line = line.trim();
+      if (!line.isEmpty()) return line;
+      System.out.println(errorMessage);
+    }
+    throw new IllegalArgumentException("Ошибка: достигнут конец ввода");
+  }
+
   private String inputString(Scanner scanner, String prompt, String errorMessage) {
-    String input;
-    do {
+    while (true) {
       System.out.print(prompt);
-      input = scanner.nextLine().trim();
+      String input = scanner.nextLine().trim();
       if (!input.isEmpty()) return input;
       System.out.println("Ошибка: " + errorMessage);
-    } while (true);
+    }
   }
 
   private Coordinates inputCoordinates(Scanner scanner) {
@@ -95,10 +131,9 @@ public class CityInputStrategy implements InputStrategy<City> {
   }
 
   private Optional<Human> inputNullableHuman(Scanner scanner) {
-    Optional<Float> height =
-        inputNumber(
-            scanner, "Рост губернатора (можно оставить пустым): ", null, Float::parseFloat, true);
-    return height.map(Human::new);
+    return inputNumber(
+            scanner, "Рост губернатора (можно оставить пустым): ", null, Float::parseFloat, true)
+        .map(Human::new);
   }
 
   private <T extends Number> Optional<T> inputNumber(
@@ -134,29 +169,64 @@ public class CityInputStrategy implements InputStrategy<City> {
     }
   }
 
-  private <T extends Enum<T>> T inputEnum(Scanner scanner, String prompt, Class<T> enumClass) {
+  private <T extends Enum<T>> T inputEnum(Scanner scanner, String prompt, Class<T> enumClass)
+      throws IOException {
+    return readEnumHelper(scanner::nextLine, prompt, enumClass);
+  }
+
+  private <T extends Enum<T>> T readEnum(
+      BufferedReader reader, Class<T> enumClass, String errorMessage) throws IOException {
+    return readEnumHelper(reader::readLine, errorMessage, enumClass);
+  }
+
+  private <T extends Enum<T>> T readEnumHelper(
+      ReaderFunction reader, String prompt, Class<T> enumClass) throws IOException {
     T[] values = enumClass.getEnumConstants();
     while (true) {
       System.out.println(prompt + " (введите название или номер):");
       for (int i = 0; i < values.length; i++) {
         System.out.println((i + 1) + " - " + values[i]);
       }
-      String input = scanner.nextLine().trim();
-      if (input.matches("\\d+")) {
-        int index = Integer.parseInt(input) - 1;
+      String line = reader.read();
+      if (line == null) throw new IllegalArgumentException("Ошибка: достигнут конец ввода");
+      line = line.trim();
+
+      if (line.matches("\\d+")) {
+        int index = Integer.parseInt(line) - 1;
         if (index >= 0 && index < values.length) return values[index];
       } else {
         try {
-          return Enum.valueOf(enumClass, input.toUpperCase());
+          return Enum.valueOf(enumClass, line.toUpperCase());
         } catch (IllegalArgumentException ignored) {
         }
       }
+
       System.out.println("Ошибка: выберите одно из предложенных значений.");
+    }
+  }
+
+  private <T extends Number> Optional<T> readNumber(
+      BufferedReader reader, Parser<T> parser, String errorMessage, Double maxValue)
+      throws IOException {
+    while (true) {
+      String line = reader.readLine();
+      if (line == null || line.trim().isEmpty()) return Optional.empty();
+      try {
+        T value = parser.parse(line.trim());
+        if (maxValue == null || value.doubleValue() <= maxValue) return Optional.of(value);
+      } catch (NumberFormatException ignored) {
+      }
+      if (errorMessage != null) System.out.println(errorMessage);
     }
   }
 
   @FunctionalInterface
   private interface Parser<T> {
     T parse(String input) throws NumberFormatException;
+  }
+
+  @FunctionalInterface
+  private interface ReaderFunction {
+    String read() throws IOException;
   }
 }

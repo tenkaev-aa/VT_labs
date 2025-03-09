@@ -2,49 +2,26 @@ package commands;
 
 import city.CityComparator;
 import io.XmlWriter;
+import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import storage.CityManager;
 import util.EnvReader;
 
-/**
- * Обработчик команд.
- *
- * <p>Этот класс отвечает за обработку и выполнение команд, введенных пользователем. Он хранит карту
- * команд, где ключом является имя команды, а значением — объект команды, реализующий интерфейс
- * {@link Command}.
- *
- * @see Command
- * @see CityManager
- * @see validation.validationService
- * @see CityComparator
- * @see XmlWriter
- */
+/** Обработчик команд. */
 public class CommandHandler {
   private final Map<String, Command> commands = new HashMap<>();
-  private final CityManager cityManager;
   private final Scanner scanner;
-  private final CityComparator cityComparator;
-  private final XmlWriter xmlWriter;
+  private boolean isScriptMode = false;
+  private BufferedReader scriptReader;
 
-  /**
-   * Создает обработчик команд.
-   *
-   * @param cityManager менеджер коллекции городов.
-   * @param scanner объект для чтения ввода пользователя.
-   * @param cityComparator компаратор для сравнения городов.
-   * @param xmlWriter объект для записи данных в XML-файл.
-   */
   public CommandHandler(
       CityManager cityManager,
       Scanner scanner,
       CityComparator cityComparator,
       XmlWriter xmlWriter) {
-    this.cityManager = cityManager;
     this.scanner = scanner;
-    this.cityComparator = cityComparator;
-    this.xmlWriter = xmlWriter;
 
     commands.put("help", new HelpCommand(this));
     commands.put("info", new InfoCommand(cityManager));
@@ -74,17 +51,21 @@ public class CommandHandler {
     return commands;
   }
 
-  /**
-   * Обрабатывает команду, введенную пользователем.
-   *
-   * @param input ввод пользователя, содержащий имя команды и, возможно, аргументы.
-   */
+  public void setScriptMode(boolean isScriptMode, BufferedReader scriptReader) {
+    this.isScriptMode = isScriptMode;
+    this.scriptReader = scriptReader;
+  }
+
   public void handleCommand(String input) {
     String[] parts = input.trim().split("\\s+");
     if (parts.length == 0) return;
     String commandName = parts[0];
     Command command = commands.get(commandName);
+
     if (command != null) {
+      if (command instanceof ScriptAwareCommand) {
+        ((ScriptAwareCommand) command).setScriptMode(isScriptMode, scriptReader);
+      }
       command.execute(parts);
     } else {
       System.out.println("Неизвестная команда. Введите help для справки.");
