@@ -1,5 +1,6 @@
 package io;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class InputHandler {
@@ -9,7 +10,7 @@ public class InputHandler {
     this.scanner = scanner;
   }
 
-  public <T> T inputObject(InputStrategy<T> strategy) {
+  public <T> T inputObject(InputStrategy<T> strategy) throws IOException {
     return strategy.inputObject(scanner);
   }
 }
