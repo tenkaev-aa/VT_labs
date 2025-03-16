@@ -1,7 +1,7 @@
 package io;
-
+import util.DateUtils;
+import util.IdGenerator;
 import builders.Builder;
-import builders.CityBuilder;
 import city.City;
 import city.Coordinates;
 import city.Human;
@@ -16,83 +16,39 @@ import java.util.Scanner;
 public class CityInputStrategy implements InputStrategy<City> {
   @Override
   public City inputObject(Scanner scanner) throws IOException {
-    Builder<City> builder = new CityBuilder();
-    System.out.println("Введите данные города:");
-
-    builder.setName(inputString(scanner, "Название: ", "Название не может быть пустым"));
-    builder.setNestedObject(inputCoordinates(scanner));
-
-    builder.setNumber(
-        inputNumber(
-                scanner,
-                "Площадь: ",
-                "Площадь должна быть положительным числом",
-                Long::parseLong,
-                true)
-            .orElseThrow(() -> new IllegalArgumentException("Площадь не может быть пустой")));
-
-    builder.setNumber(
-        inputNumber(
-                scanner,
-                "Население: ",
-                "Население должно быть положительным числом",
-                Integer::parseInt,
-                true)
-            .orElseThrow(() -> new IllegalArgumentException("Население не может быть пустым")));
-
-    inputNumber(
-            scanner,
-            "Высота над уровнем моря (можно оставить пустым): ",
-            null,
-            Float::parseFloat,
-            false)
-        .ifPresent(builder::setNumber);
-
-    builder.setEnum(inputEnum(scanner, "Выберите климат", Climate.class));
-    builder.setEnum(inputEnum(scanner, "Выберите тип правительства", Government.class));
-    builder.setEnum(inputEnum(scanner, "Выберите уровень жизни", StandardOfLiving.class));
-
-    inputNullableHuman(scanner).ifPresent(builder::setNestedObject);
-
-    return builder.build();
+    Builder<City> builder = new Builder<>(new City());
+    return builder
+            .set(City::setId, IdGenerator.getAndIncrement())
+            .set(City::setCreationDate, DateUtils.getCurrentDateTime())
+            .set(City::setName, inputString(scanner, "Название: ", "Название не может быть пустым"))
+            .set(City::setCoordinates, inputCoordinates(scanner))
+            .set(City::setArea, inputNumber(scanner, "Площадь: ", "Площадь должна быть положительной", Long::parseLong, true).orElseThrow(() -> new IllegalArgumentException("Площадь не может быть пустой")))
+            .set(City::setPopulation, inputNumber(scanner, "Население: ", "Население должно быть положительным", Integer::parseInt, true).orElseThrow(() -> new IllegalArgumentException("Население не может быть пустым")))
+            .set(City::setMetersAboveSeaLevel, inputNumber(scanner, "Высота над уровнем моря (можно оставить пустым): ", null, Float::parseFloat, false).orElse(null))
+            .set(City::setClimate, inputEnum(scanner, "Выберите климат", Climate.class))
+            .set(City::setGovernment, inputEnum(scanner, "Выберите тип правительства", Government.class))
+            .set(City::setStandardOfLiving, inputEnum(scanner, "Выберите уровень жизни", StandardOfLiving.class))
+            .set(City::setGovernor, inputNullableHuman(scanner).orElse(null))
+            .build();
   }
 
   public City createFromArgs(BufferedReader reader) throws IOException {
-    Builder<City> builder = new CityBuilder();
-
-    builder.setName(readString(reader, "Ошибка: название не может быть пустым"));
-
-    double x =
-        readNumber(reader, Double::parseDouble, "Ошибка: координата X должна быть числом", 36.0)
-            .orElseThrow(() -> new IllegalArgumentException("Координата X не может быть пустой"));
-    int y =
-        readNumber(reader, Integer::parseInt, "Ошибка: координата Y должна быть числом", null)
-            .orElseThrow(() -> new IllegalArgumentException("Координата Y не может быть пустой"));
-    builder.setNestedObject(new Coordinates(x, y));
-
-    builder.setNumber(
-        readNumber(
-                reader, Long::parseLong, "Ошибка: площадь должна быть положительным числом", null)
-            .orElseThrow(() -> new IllegalArgumentException("Площадь не может быть пустой")));
-
-    builder.setNumber(
-        readNumber(
-                reader,
-                Integer::parseInt,
-                "Ошибка: население должно быть положительным числом",
-                null)
-            .orElseThrow(() -> new IllegalArgumentException("Население не может быть пустым")));
-
-    readNumber(reader, Float::parseFloat, null, null).ifPresent(builder::setNumber);
-
-    builder.setEnum(readEnum(reader, Climate.class, "Ошибка: некорректный климат"));
-    builder.setEnum(readEnum(reader, Government.class, "Ошибка: некорректное правительство"));
-    builder.setEnum(readEnum(reader, StandardOfLiving.class, "Ошибка: некорректный уровень жизни"));
-
-    readNumber(reader, Float::parseFloat, null, null)
-        .ifPresent(height -> builder.setNestedObject(new Human(height)));
-
-    return builder.build();
+    Builder<City> builder = new Builder<>(new City());
+    return builder
+            .set(City::setId, IdGenerator.getAndIncrement())
+            .set(City::setCreationDate, DateUtils.getCurrentDateTime())
+            .set(City::setName, readString(reader, "Ошибка: название не может быть пустым"))
+            .set(City::setCoordinates, readCoordinates(reader))
+            .set(City::setArea, readNumber(reader, Long::parseLong, "Ошибка: площадь должна быть положительным числом", true)
+                    .orElseThrow(() -> new IllegalArgumentException("Площадь не может быть пустой")))
+            .set(City::setPopulation, readNumber(reader, Integer::parseInt, "Ошибка: население должно быть положительным числом", true)
+                    .orElseThrow(() -> new IllegalArgumentException("Население не может быть пустым")))
+            .set(City::setMetersAboveSeaLevel, readNumber(reader, Float::parseFloat, null, false).orElse(null))
+            .set(City::setClimate, readEnum(reader, Climate.class, "Ошибка: некорректный климат"))
+            .set(City::setGovernment, readEnum(reader, Government.class, "Ошибка: некорректное правительство"))
+            .set(City::setStandardOfLiving, readEnum(reader, StandardOfLiving.class, "Ошибка: некорректный уровень жизни"))
+            .set(City::setGovernor, readNullableHuman(reader).orElse(null))
+            .build();
   }
 
   private String readString(BufferedReader reader, String errorMessage) throws IOException {
@@ -103,6 +59,16 @@ public class CityInputStrategy implements InputStrategy<City> {
       System.out.println(errorMessage);
     }
     throw new IllegalArgumentException("Ошибка: достигнут конец ввода");
+  }
+  private Coordinates readCoordinates(BufferedReader reader) throws IOException {
+    double x = readNumber(reader, Double::parseDouble, "Ошибка: координата X должна быть числом", true,36.0)
+            .orElseThrow(() -> new IllegalArgumentException("Координата X не может быть пустой"));
+    int y = readNumber(reader, Integer::parseInt, "Ошибка: координата Y должна быть числом", true)
+            .orElseThrow(() -> new IllegalArgumentException("Координата Y не может быть пустой"));
+    return new Coordinates(x, y);
+  }
+  private Optional<Human> readNullableHuman(BufferedReader reader) throws IOException {
+    return readNumber(reader, Float::parseFloat, null, false).map(Human::new);
   }
 
   private String inputString(Scanner scanner, String prompt, String errorMessage) {
@@ -205,18 +171,24 @@ public class CityInputStrategy implements InputStrategy<City> {
     }
   }
 
-  private <T extends Number> Optional<T> readNumber(
-      BufferedReader reader, Parser<T> parser, String errorMessage, Double maxValue)
-      throws IOException {
+  private <T extends Number> Optional<T> readNumber(BufferedReader reader, Parser<T> parser, String errorMessage, boolean mustBePositive) throws IOException {
+    return readNumber(reader, parser, errorMessage, mustBePositive, null);
+  }
+
+  private <T extends Number> Optional<T> readNumber(BufferedReader reader, Parser<T> parser, String errorMessage, boolean mustBePositive, Double maxValue) throws IOException {
     while (true) {
       String line = reader.readLine();
       if (line == null || line.trim().isEmpty()) return Optional.empty();
       try {
         T value = parser.parse(line.trim());
-        if (maxValue == null || value.doubleValue() <= maxValue) return Optional.of(value);
-      } catch (NumberFormatException ignored) {
+        if ((!mustBePositive || value.doubleValue() > 0) && (maxValue == null || value.doubleValue() <= maxValue)) {
+          return Optional.of(value);
+        }
+      } catch (NumberFormatException ignored) {}
+
+      if (errorMessage != null) {
+        System.out.println("Ошибка: " + errorMessage);
       }
-      if (errorMessage != null) System.out.println(errorMessage);
     }
   }
 

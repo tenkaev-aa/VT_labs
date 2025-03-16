@@ -13,12 +13,12 @@ import util.DateUtils;
 public class City implements Comparable<City> {
   private Integer id;
   private String name;
-  private final Coordinates coordinates;
-  private final LocalDateTime creationDate;
-  private final Long area;
+  private Coordinates coordinates;
+  private LocalDateTime creationDate;
+  private Long area;
   private Integer population;
-  private final Float metersAboveSeaLevel;
-  private final Climate climate;
+  private Float metersAboveSeaLevel;
+  private Climate climate;
   private Government government;
   private StandardOfLiving standardOfLiving;
   private Human governor;
@@ -26,29 +26,29 @@ public class City implements Comparable<City> {
   /**
    * Конструктор для создания объекта {@link City}.
    *
-   * @param name Название города.
-   * @param coordinates Координаты города.
-   * @param creationDate Дата создания.
-   * @param area Площадь города.
-   * @param population Население города.
+   * @param name                Название города.
+   * @param coordinates         Координаты города.
+   * @param creationDate        Дата создания.
+   * @param area                Площадь города.
+   * @param population          Население города.
    * @param metersAboveSeaLevel Высота над уровнем моря (может быть null).
-   * @param climate Климат города.
-   * @param government Форма правления города.
-   * @param standardOfLiving Уровень жизни.
-   * @param governor Губернатор города (может быть null).
+   * @param climate             Климат города.
+   * @param government          Форма правления города.
+   * @param standardOfLiving    Уровень жизни.
+   * @param governor            Губернатор города (может быть null).
    */
   public City(
-      Integer id,
-      String name,
-      Coordinates coordinates,
-      LocalDateTime creationDate,
-      Long area,
-      Integer population,
-      Float metersAboveSeaLevel,
-      Climate climate,
-      Government government,
-      StandardOfLiving standardOfLiving,
-      Human governor) {
+          Integer id,
+          String name,
+          Coordinates coordinates,
+          LocalDateTime creationDate,
+          Long area,
+          Integer population,
+          Float metersAboveSeaLevel,
+          Climate climate,
+          Government government,
+          StandardOfLiving standardOfLiving,
+          Human governor) {
     this.id = id;
     this.creationDate = creationDate;
     this.name = name;
@@ -60,6 +60,9 @@ public class City implements Comparable<City> {
     this.government = government;
     this.standardOfLiving = standardOfLiving;
     this.governor = governor;
+  }
+  public City(){
+
   }
 
   /**
@@ -156,6 +159,40 @@ public class City implements Comparable<City> {
   public void setName(String name) {
     this.name = name;
   }
+  public void setCoordinates(Coordinates coordinates) {
+    this.coordinates = coordinates;
+  }
+
+  public void setCreationDate(LocalDateTime creationDate) {
+    this.creationDate = creationDate;
+  }
+
+  public void setArea(Long area) {
+    this.area = area;
+  }
+  public void setMetersAboveSeaLevel(Float metersAboveSeaLevel) {
+    this.metersAboveSeaLevel = metersAboveSeaLevel;
+  }
+
+  public void setClimate(Climate climate) {
+    this.climate = climate;
+  }
+
+  public void setGovernor(Human governor) {
+    this.governor = governor;
+  }
+
+  public void setStandardOfLiving(StandardOfLiving standardOfLiving) {
+    this.standardOfLiving = standardOfLiving;
+  }
+
+  public void setPopulation(Integer population) {
+    this.population = population;
+  }
+
+  public void setGovernment(Government government) {
+    this.government = government;
+  }
 
   /**
    * Возвращает строковое представление объекта {@link City}.
@@ -165,30 +202,30 @@ public class City implements Comparable<City> {
   @Override
   public String toString() {
     return "City{"
-        + "id="
-        + id
-        + ", name='"
-        + name
-        + '\''
-        + ", coordinates="
-        + coordinates
-        + ", creationDate="
-        + DateUtils.formatDateTime(creationDate)
-        + ", area="
-        + area
-        + ", population="
-        + population
-        + ", metersAboveSeaLevel="
-        + metersAboveSeaLevel
-        + ", climate="
-        + climate
-        + ", government="
-        + government
-        + ", standardOfLiving="
-        + standardOfLiving
-        + ", governor="
-        + governor
-        + '}';
+            + "id="
+            + id
+            + ", name='"
+            + name
+            + '\''
+            + ", coordinates="
+            + coordinates
+            + ", creationDate="
+            + DateUtils.formatDateTime(creationDate)
+            + ", area="
+            + area
+            + ", population="
+            + population
+            + ", metersAboveSeaLevel="
+            + metersAboveSeaLevel
+            + ", climate="
+            + climate
+            + ", government="
+            + government
+            + ", standardOfLiving="
+            + standardOfLiving
+            + ", governor="
+            + governor
+            + '}';
   }
 
   /**
@@ -203,3 +240,5 @@ public class City implements Comparable<City> {
     return new CityComparator().compare(this, other);
   }
 }
+
+
