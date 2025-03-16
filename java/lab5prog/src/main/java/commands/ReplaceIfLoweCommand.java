@@ -2,12 +2,15 @@ package commands;
 
 import city.City;
 import city.CityComparator;
+import data.ConsoleDataReader;
+import data.DataReader;
+import data.FileDataReader;
 import io.CityInputStrategy;
-import io.InputHandler;
+import storage.CityManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Scanner;
-import storage.CityManager;
 
 /** Команда для замены значения по ключу, если новое значение меньше старого. */
 public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
@@ -17,8 +20,7 @@ public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
   private BufferedReader scriptReader;
   private boolean isScriptMode;
 
-  public ReplaceIfLoweCommand(
-      CityManager cityManager, Scanner scanner, CityComparator cityComparator) {
+  public ReplaceIfLoweCommand(CityManager cityManager, Scanner scanner, CityComparator cityComparator) {
     this.cityManager = cityManager;
     this.scanner = scanner;
     this.cityComparator = cityComparator;
@@ -36,23 +38,32 @@ public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
       System.out.println("Ошибка: id города не указан.");
       return;
     }
-    CityInputStrategy cityInputStrategy = new CityInputStrategy();
-    InputHandler inputHandler = new InputHandler(scanner);
+
     try {
+
       int id = Integer.parseInt(args[1]);
+
+
       if (!cityManager.getCollection().containsKey(id)) {
         System.out.println("Город с id " + id + " не найден.");
         return;
       }
 
-      City newCity = null;
-      if (isScriptMode) {
-        newCity = cityInputStrategy.createFromArgs(scriptReader);
-      } else {
-        newCity = inputHandler.inputObject(cityInputStrategy);
-      }
+
+      DataReader reader = isScriptMode
+              ? new FileDataReader(scriptReader)
+              : new ConsoleDataReader(scanner);
+
+
+      CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
+
+
+      City newCity = cityInputStrategy.inputObject();
+
 
       City oldCity = cityManager.getCollection().get(id);
+
+
       if (cityComparator.compare(newCity, oldCity) < 0) {
         newCity.setId(id);
         cityManager.updateCity(id, newCity);
@@ -63,7 +74,9 @@ public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
     } catch (NumberFormatException e) {
       System.out.println("Ошибка: id должен быть целым числом.");
     } catch (IOException e) {
-      System.out.println("Ошибка ввода при обработке скрипта: " + e.getMessage());
+      System.out.println("Ошибка при чтении данных: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
+      System.out.println("Ошибка: " + e.getMessage());
     }
   }
 
