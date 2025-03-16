@@ -1,12 +1,15 @@
 package commands;
 
 import city.City;
+import data.ConsoleDataReader;
+import data.DataReader;
+import data.FileDataReader;
 import io.CityInputStrategy;
-import io.InputHandler;
+import storage.CityManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Scanner;
-import storage.CityManager;
 
 /** Команда для обновления элемента коллекции по ID. */
 public class UpdateCommand implements Command, ScriptAwareCommand {
@@ -34,31 +37,38 @@ public class UpdateCommand implements Command, ScriptAwareCommand {
     }
 
     try {
+
       int id = Integer.parseInt(args[1]);
+
+
       if (!cityManager.getCollection().containsKey(id)) {
         System.out.println("Город с id " + id + " не найден.");
         return;
       }
 
-      City newCity = null;
-      InputHandler inputHandler = new InputHandler(scanner);
-      CityInputStrategy cityInputStrategy = new CityInputStrategy();
-      if (isScriptMode) {
-        newCity = cityInputStrategy.createFromArgs(scriptReader);
-      } else {
-        newCity = inputHandler.inputObject(cityInputStrategy);
-      }
+
+      DataReader reader = isScriptMode
+              ? new FileDataReader(scriptReader) // Для скрипта
+              : new ConsoleDataReader(scanner); // Для консоли
+
+
+      CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
+
+
+      City newCity = cityInputStrategy.inputObject();
+
 
       newCity.setId(id);
+
+
       cityManager.updateCity(id, newCity);
       System.out.println("Город с id " + id + " успешно обновлен.");
-
     } catch (NumberFormatException e) {
       System.out.println("Ошибка: id должен быть целым числом.");
     } catch (IOException e) {
-      System.out.println("Ошибка ввода при обработке скрипта: " + e.getMessage());
-    } catch (Exception e) {
-      System.out.println("Ошибка при обновлении города: " + e.getMessage());
+      System.out.println("Ошибка при чтении данных: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
+      System.out.println("Ошибка: " + e.getMessage());
     }
   }
 

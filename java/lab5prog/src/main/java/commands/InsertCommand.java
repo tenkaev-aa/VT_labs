@@ -1,24 +1,26 @@
 package commands;
 
 import city.City;
+import data.ConsoleDataReader;
+import data.DataReader;
+import data.FileDataReader;
 import io.CityInputStrategy;
-import io.InputHandler;
+
+import storage.CityManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Scanner;
-import storage.CityManager;
 
 public class InsertCommand implements Command, ScriptAwareCommand {
   private final CityManager cityManager;
   private final Scanner scanner;
   private BufferedReader scriptReader;
   private boolean isScriptMode;
-  private final CityInputStrategy cityInputStrategy;
 
   public InsertCommand(CityManager cityManager, Scanner scanner) {
     this.cityManager = cityManager;
     this.scanner = scanner;
-    this.cityInputStrategy = new CityInputStrategy();
   }
 
   @Override
@@ -29,21 +31,24 @@ public class InsertCommand implements Command, ScriptAwareCommand {
 
   @Override
   public void execute(String[] args) {
-    City city = null;
-    InputHandler inputHandler = new InputHandler(scanner);
     try {
-      if (isScriptMode) {
-        city = cityInputStrategy.createFromArgs(scriptReader);
-      } else {
-        city = inputHandler.inputObject(cityInputStrategy);
-      }
+      DataReader reader = isScriptMode
+              ? new FileDataReader(scriptReader)
+              : new ConsoleDataReader(scanner);
+
+
+      CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
+
+
+      City city = cityInputStrategy.inputObject();
+
 
       if (city != null) {
         cityManager.addCity(city);
         System.out.println("Элемент успешно добавлен.");
       }
     } catch (IOException e) {
-      System.out.println("Ошибка при чтении данных из скрипта: " + e.getMessage());
+      System.out.println("Ошибка при чтении данных: " + e.getMessage());
     } catch (IllegalArgumentException e) {
       System.out.println("Ошибка: " + e.getMessage());
     }

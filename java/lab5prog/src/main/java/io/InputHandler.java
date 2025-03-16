@@ -11,6 +11,6 @@ public class InputHandler {
   }
 
   public <T> T inputObject(InputStrategy<T> strategy) throws IOException {
-    return strategy.inputObject(scanner);
+    return strategy.inputObject();
   }
 }
