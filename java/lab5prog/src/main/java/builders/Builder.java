@@ -1,42 +1,35 @@
 package builders;
 
-public abstract class Builder<T> {
-  /**
-   * Устанавливает имя объекта.
-   *
-   * @param name имя объекта.
-   * @return текущий строитель.
-   */
-  public abstract Builder<T> setName(String name);
+import java.util.function.BiConsumer;
 
-  /**
-   * Устанавливает числовое значение объекта.
-   *
-   * @param value числовое значение.
-   * @return текущий строитель.
-   */
-  public abstract Builder<T> setNumber(Number value);
+public class Builder<T> {
+  private final T instance;
 
-  /**
-   * Устанавливает перечисление (enum) объекта.
-   *
-   * @param value значение перечисления.
-   * @return текущий строитель.
-   */
-  public abstract Builder<T> setEnum(Enum<?> value);
+  public Builder(T instance) {
+    this.instance = instance;
+  }
 
-  /**
-   * Устанавливает вложенный объект.
-   *
-   * @param value вложенный объект.
-   * @return текущий строитель.
-   */
-  public abstract Builder<T> setNestedObject(Object value);
+  public Builder<T> set(BiConsumer<T, String> setter, String value) {
+    setter.accept(instance, value);
+    return this;
+  }
 
-  /**
-   * Создает и возвращает объект.
-   *
-   * @return созданный объект.
-   */
-  public abstract T build();
+  public Builder<T> set(BiConsumer<T, Number> setter, Number value) {
+    setter.accept(instance, value);
+    return this;
+  }
+
+  public <E extends Enum<E>> Builder<T> set(BiConsumer<T, E> setter, E value) {
+    setter.accept(instance, value);
+    return this;
+  }
+
+  public <V> Builder<T> set(BiConsumer<T, V> setter, V value) {
+    setter.accept(instance, value);
+    return this;
+  }
+
+  public T build() {
+    return instance;
+  }
 }
