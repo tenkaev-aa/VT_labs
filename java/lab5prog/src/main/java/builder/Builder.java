@@ -1,10 +1,6 @@
 package builder;
 
-import city.Human;
-
-import java.util.Optional;
 import java.util.function.BiConsumer;
-
 
 public class Builder<T> {
   private final T instance;
@@ -12,7 +8,6 @@ public class Builder<T> {
   public Builder(T instance) {
     this.instance = instance;
   }
-
 
   public Builder<T> set(BiConsumer<T, Number> setter, Number value) {
     setter.accept(instance, value);
@@ -32,5 +27,4 @@ public class Builder<T> {
   public T build() {
     return instance;
   }
-
 }

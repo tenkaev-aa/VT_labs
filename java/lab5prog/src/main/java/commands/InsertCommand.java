@@ -5,12 +5,10 @@ import data.ConsoleDataReader;
 import data.DataReader;
 import data.FileDataReader;
 import io.CityInputStrategy;
-
-import storage.CityManager;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Scanner;
+import storage.CityManager;
 
 public class InsertCommand implements Command, ScriptAwareCommand {
   private final CityManager cityManager;
@@ -32,16 +30,12 @@ public class InsertCommand implements Command, ScriptAwareCommand {
   @Override
   public void execute(String[] args) {
     try {
-      DataReader reader = isScriptMode
-              ? new FileDataReader(scriptReader)
-              : new ConsoleDataReader(scanner);
-
+      DataReader reader =
+          isScriptMode ? new FileDataReader(scriptReader) : new ConsoleDataReader(scanner);
 
       CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
 
-
       City city = cityInputStrategy.inputObject();
-
 
       if (city != null) {
         cityManager.addCity(city);
