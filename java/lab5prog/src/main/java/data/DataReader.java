@@ -1,13 +1,28 @@
 package data;
 
-
 import java.io.IOException;
+import java.util.Optional;
 
 public interface DataReader {
-    String readString(String prompt, String errorMessage) throws IOException;
-    Long readLong(String prompt, String errorMessage, boolean mustBePositive) throws IOException;
-    Integer readInt(String prompt, String errorMessage, boolean mustBePositive) throws IOException;
-    Float readFloat(String prompt, String errorMessage, boolean mustBePositive) throws IOException;
-    Double readDouble(String prompt, String errorMessage, boolean mustBePositive) throws IOException;
-    <T extends Enum<T>> T readEnum(String prompt, Class<T> enumClass, String errorMessage) throws IOException;
+  Optional<String> readString(String prompt, String errorMessage, boolean allowNull)
+      throws IOException;
+
+  Optional<Long> readLong(
+      String prompt, String errorMessage, boolean mustBePositive, boolean allowNull)
+      throws IOException;
+
+  Optional<Integer> readInt(
+      String prompt, String errorMessage, boolean mustBePositive, boolean allowNull)
+      throws IOException;
+
+  Optional<Float> readFloat(
+      String prompt, String errorMessage, boolean mustBePositive, boolean allowNull)
+      throws IOException;
+
+  Optional<Double> readDouble(
+      String prompt, String errorMessage, boolean mustBePositive, boolean allowNull)
+      throws IOException;
+
+  <T extends Enum<T>> Optional<T> readEnum(
+      String prompt, Class<T> enumClass, String errorMessage, boolean allowNull) throws IOException;
 }

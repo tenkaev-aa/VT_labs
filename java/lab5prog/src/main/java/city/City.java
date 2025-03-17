@@ -26,29 +26,29 @@ public class City implements Comparable<City> {
   /**
    * Конструктор для создания объекта {@link City}.
    *
-   * @param name                Название города.
-   * @param coordinates         Координаты города.
-   * @param creationDate        Дата создания.
-   * @param area                Площадь города.
-   * @param population          Население города.
+   * @param name Название города.
+   * @param coordinates Координаты города.
+   * @param creationDate Дата создания.
+   * @param area Площадь города.
+   * @param population Население города.
    * @param metersAboveSeaLevel Высота над уровнем моря (может быть null).
-   * @param climate             Климат города.
-   * @param government          Форма правления города.
-   * @param standardOfLiving    Уровень жизни.
-   * @param governor            Губернатор города (может быть null).
+   * @param climate Климат города.
+   * @param government Форма правления города.
+   * @param standardOfLiving Уровень жизни.
+   * @param governor Губернатор города (может быть null).
    */
   public City(
-          Integer id,
-          String name,
-          Coordinates coordinates,
-          LocalDateTime creationDate,
-          Long area,
-          Integer population,
-          Float metersAboveSeaLevel,
-          Climate climate,
-          Government government,
-          StandardOfLiving standardOfLiving,
-          Human governor) {
+      Integer id,
+      String name,
+      Coordinates coordinates,
+      LocalDateTime creationDate,
+      Long area,
+      Integer population,
+      Float metersAboveSeaLevel,
+      Climate climate,
+      Government government,
+      StandardOfLiving standardOfLiving,
+      Human governor) {
     this.id = id;
     this.creationDate = creationDate;
     this.name = name;
@@ -61,9 +61,8 @@ public class City implements Comparable<City> {
     this.standardOfLiving = standardOfLiving;
     this.governor = governor;
   }
-  public City(){
 
-  }
+  public City() {}
 
   /**
    * @return Уникальный идентификатор города.
@@ -159,6 +158,7 @@ public class City implements Comparable<City> {
   public void setName(String name) {
     this.name = name;
   }
+
   public void setCoordinates(Coordinates coordinates) {
     this.coordinates = coordinates;
   }
@@ -170,6 +170,7 @@ public class City implements Comparable<City> {
   public void setArea(Long area) {
     this.area = area;
   }
+
   public void setMetersAboveSeaLevel(Float metersAboveSeaLevel) {
     this.metersAboveSeaLevel = metersAboveSeaLevel;
   }
@@ -202,30 +203,30 @@ public class City implements Comparable<City> {
   @Override
   public String toString() {
     return "City{"
-            + "id="
-            + id
-            + ", name='"
-            + name
-            + '\''
-            + ", coordinates="
-            + coordinates
-            + ", creationDate="
-            + DateUtils.formatDateTime(creationDate)
-            + ", area="
-            + area
-            + ", population="
-            + population
-            + ", metersAboveSeaLevel="
-            + metersAboveSeaLevel
-            + ", climate="
-            + climate
-            + ", government="
-            + government
-            + ", standardOfLiving="
-            + standardOfLiving
-            + ", governor="
-            + governor
-            + '}';
+        + "id="
+        + id
+        + ", name='"
+        + name
+        + '\''
+        + ", coordinates="
+        + coordinates
+        + ", creationDate="
+        + DateUtils.formatDateTime(creationDate)
+        + ", area="
+        + area
+        + ", population="
+        + population
+        + ", metersAboveSeaLevel="
+        + metersAboveSeaLevel
+        + ", climate="
+        + climate
+        + ", government="
+        + government
+        + ", standardOfLiving="
+        + standardOfLiving
+        + ", governor="
+        + governor
+        + '}';
   }
 
   /**
@@ -240,5 +241,3 @@ public class City implements Comparable<City> {
     return new CityComparator().compare(this, other);
   }
 }
-
-

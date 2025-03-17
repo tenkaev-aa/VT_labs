@@ -5,11 +5,10 @@ import data.ConsoleDataReader;
 import data.DataReader;
 import data.FileDataReader;
 import io.CityInputStrategy;
-import storage.CityManager;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Scanner;
+import storage.CityManager;
 
 /** Команда для обновления элемента коллекции по ID. */
 public class UpdateCommand implements Command, ScriptAwareCommand {
@@ -40,26 +39,21 @@ public class UpdateCommand implements Command, ScriptAwareCommand {
 
       int id = Integer.parseInt(args[1]);
 
-
       if (!cityManager.getCollection().containsKey(id)) {
         System.out.println("Город с id " + id + " не найден.");
         return;
       }
 
-
-      DataReader reader = isScriptMode
+      DataReader reader =
+          isScriptMode
               ? new FileDataReader(scriptReader) // Для скрипта
               : new ConsoleDataReader(scanner); // Для консоли
 
-
       CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
-
 
       City newCity = cityInputStrategy.inputObject();
 
-
       newCity.setId(id);
-
 
       cityManager.updateCity(id, newCity);
       System.out.println("Город с id " + id + " успешно обновлен.");
