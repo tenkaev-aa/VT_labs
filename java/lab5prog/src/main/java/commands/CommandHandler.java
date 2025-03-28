@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import storage.CityManager;
-import util.EnvReader;
 
 /** Обработчик команд. */
 public class CommandHandler {
@@ -20,7 +19,8 @@ public class CommandHandler {
       CityManager cityManager,
       Scanner scanner,
       CityComparator cityComparator,
-      XmlWriter xmlWriter) {
+      XmlWriter xmlWriter,
+      String filename) {
     this.scanner = scanner;
 
     commands.put("help", new HelpCommand(this));
@@ -30,7 +30,6 @@ public class CommandHandler {
     commands.put("update", new UpdateCommand(cityManager, scanner));
     commands.put("remove_key", new RemoveKeyCommand(cityManager));
     commands.put("clear", new ClearCommand(cityManager));
-    String filename = EnvReader.getFilePath();
     commands.put("save", new SaveCommand(cityManager, filename));
     commands.put("execute_script", new ExecuteScriptCommand(this));
     commands.put("exit", new ExitCommand());

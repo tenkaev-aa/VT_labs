@@ -1,5 +1,6 @@
 package city;
 
+import io.FieldInput;
 import validation.validationService;
 
 /**
@@ -13,7 +14,10 @@ import validation.validationService;
  *
  * @see validationService
  */
-public record Coordinates(double x, int y) {
+public class Coordinates {
+  private double x;
+  private  int y;
+
   /**
    * Создает новый объект координат с заданными значениями {@code x} и {@code y}.
    *
@@ -34,8 +38,8 @@ public record Coordinates(double x, int y) {
    *
    * @return координата по оси X.
    */
-  @Override
-  public double x() {
+
+  public double getX() {
     return x;
   }
 
@@ -44,10 +48,19 @@ public record Coordinates(double x, int y) {
    *
    * @return координата по оси Y.
    */
-  @Override
-  public int y() {
+  public int getY() {
     return y;
   }
+  @FieldInput(prompt = "Координата X:",max=36.00)
+  public void setX(double x){
+    this.x=x;
+  }
+  @FieldInput(prompt = "Координата Y:")
+  public void setY(int y){
+    this.y=y;
+  }
+
+
 
   /**
    * Возвращает строковое представление объекта координат.

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 import util.DateUtils;
+import util.IdGenerator;
 
 /**
  * Класс для управления коллекцией городов.
@@ -63,22 +64,24 @@ public class CityManager {
     if (!collection.containsKey(id)) {
       throw new IllegalArgumentException("Город с ID " + id + " не найден.");
     }
-    newCity.setId(id); // Сохраняем старый ID
+    newCity.setId(id);
     collection.put(id, newCity);
     updateLastModifiedTime();
   }
 
+  public Set<Integer> getAllIds() {
+    return new HashSet<>(collection.keySet());
+  }
+
   /**
    * Удаляет город по ID.
-   *
-   * @param id ID города для удаления.
-   * @throws IllegalArgumentException если город с указанным ID не найден.
    */
   public void removeCity(int id) {
     if (!collection.containsKey(id)) {
       throw new IllegalArgumentException("Город с ID " + id + " не найден.");
     }
     collection.remove(id);
+    IdGenerator.releaseId(id);
     updateLastModifiedTime();
   }
 

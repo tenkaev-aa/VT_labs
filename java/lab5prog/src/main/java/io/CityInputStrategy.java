@@ -9,14 +9,17 @@ import enums.Climate;
 import enums.Government;
 import enums.StandardOfLiving;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import util.DateUtils;
 import util.IdGenerator;
 
 public class CityInputStrategy implements InputStrategy<City> {
-  private final DataReader reader;
+  private final DataReader<City> reader;
 
-  public CityInputStrategy(DataReader reader) {
+
+  public CityInputStrategy(DataReader<City> reader) {
     this.reader = reader;
   }
 
@@ -24,55 +27,52 @@ public class CityInputStrategy implements InputStrategy<City> {
   public City inputObject() throws IOException {
     Builder<City> builder = new Builder<>(new City());
     return builder
-        .set(City::setId, IdGenerator.getAndIncrement())
-        .set(City::setCreationDate, DateUtils.getCurrentDateTime())
-        .set(
-            City::setName,
-            reader
-                .readString("Название: ", "Название не может быть пустым", false)
-                .orElseThrow(() -> new IllegalArgumentException("Название обязательно")))
-        .set(City::setCoordinates, readCoordinates())
-        .set(
-            City::setArea,
-            reader
-                .readLong("Площадь: ", "Площадь должна быть положительной", true, false)
-                .orElseThrow(() -> new IllegalArgumentException("Площадь обязательна")))
-        .set(
-            City::setPopulation,
-            reader
-                .readInt("Население: ", "Население должно быть положительным", true, false)
-                .orElseThrow(() -> new IllegalArgumentException("Население обязательно")))
-        .set(
-            City::setMetersAboveSeaLevel,
-            reader
-                .readFloat("Высота над уровнем моря (можно оставить пустым): ", null, false, true)
-                .orElse(null) //
-            )
-        .set(
-            City::setClimate,
-            reader
-                .readEnum("Выберите климат: ", Climate.class, "Некорректный климат", false)
-                .orElseThrow(() -> new IllegalArgumentException("Климат обязателен")))
-        .set(
-            City::setGovernment,
-            reader
-                .readEnum(
-                    "Выберите тип правительства: ",
-                    Government.class,
-                    "Некорректное правительство",
-                    false)
-                .orElseThrow(() -> new IllegalArgumentException("Тип правительства обязателен")))
-        .set(
-            City::setStandardOfLiving,
-            reader
-                .readEnum(
-                    "Выберите уровень жизни: ",
-                    StandardOfLiving.class,
-                    "Некорректный уровень жизни",
-                    false)
-                .orElseThrow(() -> new IllegalArgumentException("Уровень жизни обязателен")))
-        .set(City::setGovernor, readNullableHuman().orElse(null))
-        .build();
+            .set(City::setId, IdGenerator.getNextId())
+            .set(City::setCreationDate, DateUtils.getCurrentDateTime())
+            .set(
+                    City::setName,
+                    reader
+                            .readStringWithMeta((BiConsumer<City, String> & Serializable) City::setName)
+                            .orElse(null))
+            .set(City::setCoordinates, readCoordinates())
+            .set(
+                    City::setArea,
+                    reader
+                            .readLongWithMeta((BiConsumer<City, Long> & Serializable) City::setArea)
+                            .orElse(null))
+            .set(
+                    City::setPopulation,
+                    reader
+                            .readIntWithMeta((BiConsumer<City, Integer> & Serializable) City::setPopulation)
+                            .orElse(null))
+            .set(
+                    City::setMetersAboveSeaLevel,
+                    reader
+                            .readFloatWithMeta(
+                                    (BiConsumer<City, Float> & Serializable) City::setMetersAboveSeaLevel)
+                            .orElse(null))
+            .set(
+                    City::setClimate,
+                    reader
+                            .readEnumWithMeta(
+                                    (BiConsumer<City, Climate> & Serializable) City::setClimate, Climate.class)
+                            .orElse(null))
+            .set(
+                    City::setGovernment,
+                    reader
+                            .readEnumWithMeta(
+                                    (BiConsumer<City, Government> & Serializable) City::setGovernment,
+                                    Government.class)
+                            .orElse(null))
+            .set(
+                    City::setStandardOfLiving,
+                    reader
+                            .readEnumWithMeta(
+                                    (BiConsumer<City, StandardOfLiving> & Serializable) City::setStandardOfLiving,
+                                    StandardOfLiving.class)
+                            .orElse(null))
+            .set(City::setGovernor, readGovernor())
+            .build();
   }
 
   private Coordinates readCoordinates() throws IOException {
@@ -82,33 +82,50 @@ public class CityInputStrategy implements InputStrategy<City> {
   }
 
   private double readXCoordinate() throws IOException {
-    Optional<Double> xOpt =
-        reader.readDouble(
-            "Координата X (максимум 36): ", "Значение должно быть не больше 36", false, false);
+    while (true) {
+      Optional<Double> xOpt = reader.readDouble(
+              "Координата X (максимум 36): ",
+              "Значение должно быть не больше 36",
+              false,
+              false,
+              null,
+              36.0
+      );
 
-    if (xOpt.isPresent() && xOpt.get() <= 36) {
-      return xOpt.get();
-    } else {
-      System.out.println("Ошибка: Значение координаты X должно быть не больше 36.");
-      return readXCoordinate();
+      if (xOpt.isPresent()) {
+        return xOpt.get();
+      }
+      System.out.println("Ошибка: Координата X обязательна.");
     }
   }
 
   private int readYCoordinate() throws IOException {
-    Optional<Integer> yOpt =
-        reader.readInt("Координата Y: ", "Введите корректное число", false, false);
+    while (true) {
+      Optional<Integer> yOpt = reader.readInt(
+              "Координата Y: ",
+              "Введите корректное число",
+              false,
+              false,
+              null,
+              null
+      );
 
-    if (yOpt.isPresent()) {
-      return yOpt.get();
-    } else {
-      System.out.println("Ошибка: Координата Y обязательна. Пожалуйста, попробуйте снова.");
-      return readYCoordinate();
+      if (yOpt.isPresent()) {
+        return yOpt.get();
+      }
+      System.out.println("Ошибка: Координата Y обязательна.");
     }
   }
 
-  private Optional<Human> readNullableHuman() throws IOException {
-    Optional<Float> height =
-        reader.readFloat("Рост губернатора (можно оставить пустым): ", null, false, true);
-    return height.map(Human::new);
+  private Human readGovernor() throws IOException {
+    Optional<Float> height = reader.readFloat(
+            "Рост губернатора (можно оставить пустым): ",
+            "Введите корректное значение роста",
+            false,
+            true,
+            null,
+            null
+    );
+    return height.map(Human::new).orElse(null);
   }
 }
