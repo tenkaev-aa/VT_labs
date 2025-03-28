@@ -11,25 +11,40 @@ import java.io.IOException;
 import java.util.Scanner;
 import storage.CityManager;
 
-/** Команда для замены значения по ключу, если новое значение меньше старого. */
 public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
   private final CityManager cityManager;
-  private final Scanner scanner;
   private final CityComparator cityComparator;
-  private BufferedReader scriptReader;
-  private boolean isScriptMode;
+  private DataReader activeReader;
+  private CityInputStrategy inputStrategy;
+  private final ConsoleDataReader consoleReader;
+  private FileDataReader fileReader;
 
   public ReplaceIfLoweCommand(
-      CityManager cityManager, Scanner scanner, CityComparator cityComparator) {
+          CityManager cityManager, Scanner scanner, CityComparator cityComparator) {
     this.cityManager = cityManager;
-    this.scanner = scanner;
     this.cityComparator = cityComparator;
+    this.consoleReader = new ConsoleDataReader(scanner);
+    this.activeReader = consoleReader;
+    this.inputStrategy = new CityInputStrategy(consoleReader);
   }
 
   @Override
   public void setScriptMode(boolean isScriptMode, BufferedReader scriptReader) {
-    this.isScriptMode = isScriptMode;
-    this.scriptReader = scriptReader;
+    if (isScriptMode) {
+      try {
+        if (fileReader != null) {
+          fileReader.close();
+        }
+        this.fileReader = new FileDataReader(scriptReader);
+        this.activeReader = fileReader;
+      } catch (IOException e) {
+        System.err.println("Ошибка при переключении в режим скрипта: " + e.getMessage());
+        this.activeReader = consoleReader;
+      }
+    } else {
+      this.activeReader = consoleReader;
+    }
+    this.inputStrategy = new CityInputStrategy(activeReader);
   }
 
   @Override
@@ -40,7 +55,6 @@ public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
     }
 
     try {
-
       int id = Integer.parseInt(args[1]);
 
       if (!cityManager.getCollection().containsKey(id)) {
@@ -48,13 +62,7 @@ public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
         return;
       }
 
-      DataReader reader =
-          isScriptMode ? new FileDataReader(scriptReader) : new ConsoleDataReader(scanner);
-
-      CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
-
-      City newCity = cityInputStrategy.inputObject();
-
+      City newCity = inputStrategy.inputObject();
       City oldCity = cityManager.getCollection().get(id);
 
       if (cityComparator.compare(newCity, oldCity) < 0) {
@@ -66,15 +74,23 @@ public class ReplaceIfLoweCommand implements Command, ScriptAwareCommand {
       }
     } catch (NumberFormatException e) {
       System.out.println("Ошибка: id должен быть целым числом.");
-    } catch (IOException e) {
-      System.out.println("Ошибка при чтении данных: " + e.getMessage());
     } catch (IllegalArgumentException e) {
       System.out.println("Ошибка: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Неожиданная ошибка: " + e.getMessage());
+      setScriptMode(false, null);
     }
   }
 
   @Override
   public String getDescription() {
-    return "заменить значение, если новое меньше старого";
+    return "заменить значение по ключу, если новое значение меньше старого";
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (fileReader != null) {
+      fileReader.close();
+    }
   }
 }

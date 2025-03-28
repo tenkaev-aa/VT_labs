@@ -46,7 +46,7 @@ public class Main {
    */
   public static void main(String[] args) {
     try {
-      // Инициализация сервисов и компонентов
+      // Инициализация
       XmlWriter xmlWriter = new XmlWriter();
       CityComparator comparator = new CityComparator();
       CityManager cityManager = new CityManager();
@@ -58,14 +58,13 @@ public class Main {
       // Загрузка данных о городах из файла
       DataProcessor dataProcessor = new DataProcessor(cityManager);
       dataProcessor.processData(cityDataList);
-      int lastId = cityManager.getMaxId() + 1;
-      IdGenerator.SetLastId(lastId);
+      IdGenerator.init(cityManager.getAllIds());
       // Инициализация сканера для ввода пользователя
       Scanner scanner = new Scanner(System.in);
 
       // Создание обработчика команд
       CommandHandler commandHandler =
-          new CommandHandler(cityManager, scanner, comparator, xmlWriter);
+          new CommandHandler(cityManager, scanner, comparator, xmlWriter, envFilename);
 
       // Запуск интерактивного режима
       System.out.println("Программа запущена. Введите команду (help для справки):");

@@ -89,8 +89,8 @@ public class XmlWriter implements DataWriter {
    */
   private void writeCoordinates(BufferedWriter writer, Coordinates coordinates) throws IOException {
     writer.write("    <coordinates>\n");
-    writeElement(writer, "x", coordinates.x());
-    writeElement(writer, "y", coordinates.y());
+    writeElement(writer, "x", coordinates.getX());
+    writeElement(writer, "y", coordinates.getY());
     writer.write("    </coordinates>\n");
   }
 

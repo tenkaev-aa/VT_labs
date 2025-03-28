@@ -10,22 +10,37 @@ import java.io.IOException;
 import java.util.Scanner;
 import storage.CityManager;
 
-/** Команда для обновления элемента коллекции по ID. */
 public class UpdateCommand implements Command, ScriptAwareCommand {
   private final CityManager cityManager;
-  private final Scanner scanner;
-  private BufferedReader scriptReader;
-  private boolean isScriptMode;
+  private DataReader activeReader;
+  private CityInputStrategy inputStrategy;
+  private final ConsoleDataReader consoleReader;
+  private FileDataReader fileReader;
 
   public UpdateCommand(CityManager cityManager, Scanner scanner) {
     this.cityManager = cityManager;
-    this.scanner = scanner;
+    this.consoleReader = new ConsoleDataReader(scanner);
+    this.activeReader = consoleReader;
+    this.inputStrategy = new CityInputStrategy(consoleReader);
   }
 
   @Override
   public void setScriptMode(boolean isScriptMode, BufferedReader scriptReader) {
-    this.isScriptMode = isScriptMode;
-    this.scriptReader = scriptReader;
+    if (isScriptMode) {
+      try {
+        if (fileReader != null) {
+          fileReader.close();
+        }
+        this.fileReader = new FileDataReader(scriptReader);
+        this.activeReader = fileReader;
+      } catch (IOException e) {
+        System.err.println("Ошибка при переключении в режим скрипта: " + e.getMessage());
+        this.activeReader = consoleReader;
+      }
+    } else {
+      this.activeReader = consoleReader;
+    }
+    this.inputStrategy = new CityInputStrategy(activeReader);
   }
 
   @Override
@@ -36,7 +51,6 @@ public class UpdateCommand implements Command, ScriptAwareCommand {
     }
 
     try {
-
       int id = Integer.parseInt(args[1]);
 
       if (!cityManager.getCollection().containsKey(id)) {
@@ -44,30 +58,29 @@ public class UpdateCommand implements Command, ScriptAwareCommand {
         return;
       }
 
-      DataReader reader =
-          isScriptMode
-              ? new FileDataReader(scriptReader) // Для скрипта
-              : new ConsoleDataReader(scanner); // Для консоли
-
-      CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
-
-      City newCity = cityInputStrategy.inputObject();
-
+      City newCity = inputStrategy.inputObject();
       newCity.setId(id);
-
       cityManager.updateCity(id, newCity);
       System.out.println("Город с id " + id + " успешно обновлен.");
     } catch (NumberFormatException e) {
       System.out.println("Ошибка: id должен быть целым числом.");
-    } catch (IOException e) {
-      System.out.println("Ошибка при чтении данных: " + e.getMessage());
     } catch (IllegalArgumentException e) {
       System.out.println("Ошибка: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Неожиданная ошибка: " + e.getMessage());
+      setScriptMode(false, null);
     }
   }
 
   @Override
   public String getDescription() {
-    return "обновить элемент по id";
+    return "обновить значение элемента коллекции по указанному id";
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (fileReader != null) {
+      fileReader.close();
+    }
   }
 }

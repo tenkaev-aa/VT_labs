@@ -1,31 +1,33 @@
 package util;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 
-/**
- * Утилити класс для генерации уникальных идентификаторов.
- *
- * <p>Этот класс предоставляет метод для генерации уникальных целочисленных идентификаторов с
- * использованием {@link AtomicInteger}. Каждый вызов метода {@link #getAndIncrement()} возвращает
- * новое уникальное значение, начиная с 1.
- *
- * @see AtomicInteger
- */
 public final class IdGenerator {
-  private static final AtomicInteger counter = new AtomicInteger(1);
+  private static final Set<Integer> usedIds = new HashSet<>();
+  private static final Queue<Integer> freeIds = new PriorityQueue<>();
 
-  /**
-   * Возвращает текущее значение счетчика и увеличивает его на 1.
-   *
-   * <p>Метод гарантирует атомарность операции.
-   *
-   * @return текущее значение счетчика.
-   */
-  public static int getAndIncrement() {
-    return counter.getAndIncrement();
+  public static synchronized int getNextId() {
+    if (!freeIds.isEmpty()) {
+      return freeIds.poll();
+    }
+
+    // Если нет свободных - ищем минимальный незанятый
+    int id = 1;
+    while (usedIds.contains(id)) {
+      id++;
+    }
+    usedIds.add(id);
+    return id;
   }
 
-  public static void SetLastId(int value) {
-    counter.set(value);
+  public static synchronized void releaseId(int id) {
+    usedIds.remove(id);
+    freeIds.add(id);
+  }
+
+  public static synchronized void init(Collection<Integer> existingIds) {
+    usedIds.clear();
+    freeIds.clear();
+    usedIds.addAll(existingIds);
   }
 }

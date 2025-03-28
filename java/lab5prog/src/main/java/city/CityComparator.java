@@ -34,25 +34,24 @@ import java.util.Comparator;
 public final class CityComparator implements Comparator<City> {
   @Override
   public int compare(City city1, City city2) {
-    // 1. Сравнение по name
     int nameCompare = city1.getName().compareTo(city2.getName());
     if (nameCompare != 0) return nameCompare;
 
-    // 2. Сравнение по coordinates (x, затем y)
-    int xCompare = Double.compare(city1.getCoordinates().x(), city2.getCoordinates().x());
+
+    int xCompare = Double.compare(city1.getCoordinates().getX(), city2.getCoordinates().getX());
     if (xCompare != 0) return xCompare;
-    int yCompare = Integer.compare(city1.getCoordinates().y(), city2.getCoordinates().y());
+    int yCompare = Integer.compare(city1.getCoordinates().getY(), city2.getCoordinates().getY());
     if (yCompare != 0) return yCompare;
 
-    // 3. Сравнение по area
+
     int areaCompare = Long.compare(city1.getArea(), city2.getArea());
     if (areaCompare != 0) return areaCompare;
 
-    // 4. Сравнение по population
+
     int populationCompare = Integer.compare(city1.getPopulation(), city2.getPopulation());
     if (populationCompare != 0) return populationCompare;
 
-    // 5. Сравнение по metersAboveSeaLevel (null считается "меньше")
+
     if (city1.getMetersAboveSeaLevel() == null && city2.getMetersAboveSeaLevel() != null) return -1;
     if (city1.getMetersAboveSeaLevel() != null && city2.getMetersAboveSeaLevel() == null) return 1;
     if (city1.getMetersAboveSeaLevel() != null && city2.getMetersAboveSeaLevel() != null) {
@@ -61,20 +60,20 @@ public final class CityComparator implements Comparator<City> {
       if (metersCompare != 0) return metersCompare;
     }
 
-    // 6. Сравнение по climate
+
     int climateCompare = city1.getClimate().compareTo(city2.getClimate());
     if (climateCompare != 0) return climateCompare;
 
-    // 7. Сравнение по government
+
     int governmentCompare = city1.getGovernment().compareTo(city2.getGovernment());
     if (governmentCompare != 0) return governmentCompare;
 
-    // 8. Сравнение по standardOfLiving
+
     int standardOfLivingCompare =
         city1.getStandardOfLiving().compareTo(city2.getStandardOfLiving());
     if (standardOfLivingCompare != 0) return standardOfLivingCompare;
 
-    // 9. Сравнение по governor.height (null считается "меньше")
+
     Float height1 = (city1.getGovernor() != null) ? city1.getGovernor().getHeight() : null;
     Float height2 = (city2.getGovernor() != null) ? city2.getGovernor().getHeight() : null;
     if (height1 == null && height2 != null) return -1;
@@ -83,7 +82,7 @@ public final class CityComparator implements Comparator<City> {
       return Float.compare(height1, height2);
     }
 
-    // Если все поля равны
+
     return 0;
   }
 }

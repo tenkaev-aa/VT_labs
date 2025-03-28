@@ -12,36 +12,46 @@ import java.util.Scanner;
 import java.util.function.Predicate;
 import storage.CityManager;
 
-/** Команда для удаления элементов, превышающих заданный. */
 public class RemoveGreaterCommand implements Command, ScriptAwareCommand {
   private final CityManager cityManager;
-  private final Scanner scanner;
   private final CityComparator cityComparator;
-  private BufferedReader scriptReader;
-  private boolean isScriptMode;
+  private DataReader activeReader;
+  private CityInputStrategy inputStrategy;
+  private final ConsoleDataReader consoleReader;
+  private FileDataReader fileReader;
 
   public RemoveGreaterCommand(
-      CityManager cityManager, Scanner scanner, CityComparator cityComparator) {
+          CityManager cityManager, Scanner scanner, CityComparator cityComparator) {
     this.cityManager = cityManager;
-    this.scanner = scanner;
     this.cityComparator = cityComparator;
+    this.consoleReader = new ConsoleDataReader(scanner);
+    this.activeReader = consoleReader;
+    this.inputStrategy = new CityInputStrategy(consoleReader);
   }
 
   @Override
   public void setScriptMode(boolean isScriptMode, BufferedReader scriptReader) {
-    this.isScriptMode = isScriptMode;
-    this.scriptReader = scriptReader;
+    if (isScriptMode) {
+      try {
+        if (fileReader != null) {
+          fileReader.close();
+        }
+        this.fileReader = new FileDataReader(scriptReader);
+        this.activeReader = fileReader;
+      } catch (IOException e) {
+        System.err.println("Ошибка при переключении в режим скрипта: " + e.getMessage());
+        this.activeReader = consoleReader;
+      }
+    } else {
+      this.activeReader = consoleReader;
+    }
+    this.inputStrategy = new CityInputStrategy(activeReader);
   }
 
   @Override
   public void execute(String[] args) {
     try {
-      DataReader reader =
-          isScriptMode ? new FileDataReader(scriptReader) : new ConsoleDataReader(scanner);
-
-      CityInputStrategy cityInputStrategy = new CityInputStrategy(reader);
-
-      City city = cityInputStrategy.inputObject();
+      City city = inputStrategy.inputObject();
 
       if (cityManager.getCollection().isEmpty()) {
         System.out.println("Коллекция пуста. Удалять нечего.");
@@ -56,15 +66,23 @@ public class RemoveGreaterCommand implements Command, ScriptAwareCommand {
       } else {
         System.out.println("Удалено " + removedCount + " элементов.");
       }
-    } catch (IOException e) {
-      System.out.println("Ошибка при чтении данных: " + e.getMessage());
     } catch (IllegalArgumentException e) {
       System.out.println("Ошибка: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Неожиданная ошибка: " + e.getMessage());
+      setScriptMode(false, null);
     }
   }
 
   @Override
   public String getDescription() {
     return "удалить элементы, превышающие заданный";
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (fileReader != null) {
+      fileReader.close();
+    }
   }
 }

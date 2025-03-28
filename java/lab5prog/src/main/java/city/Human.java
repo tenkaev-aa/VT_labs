@@ -11,7 +11,9 @@ import validation.validationService;
  *
  * @see validationService
  */
-public record Human(Float height) {
+public class  Human {
+
+  private Float height;
 
   /**
    * Создает новый объект человека с заданным ростом.
@@ -33,6 +35,9 @@ public record Human(Float height) {
    */
   public float getHeight() {
     return height;
+  }
+  public void setHeight(Float height){
+    this.height=height;
   }
 
   /**

@@ -3,6 +3,7 @@ package city;
 import enums.Climate;
 import enums.Government;
 import enums.StandardOfLiving;
+import io.FieldInput;
 import java.time.LocalDateTime;
 import util.DateUtils;
 
@@ -155,10 +156,12 @@ public class City implements Comparable<City> {
    *
    * @param name Новое название города.
    */
+  @FieldInput(prompt = "Название города:", flags = 0b010)
   public void setName(String name) {
     this.name = name;
   }
 
+  @FieldInput(prompt = "Координаты города:", flags = 0b010)
   public void setCoordinates(Coordinates coordinates) {
     this.coordinates = coordinates;
   }
@@ -167,30 +170,37 @@ public class City implements Comparable<City> {
     this.creationDate = creationDate;
   }
 
+  @FieldInput(prompt = "Площадь города:", flags = 0b011)
   public void setArea(Long area) {
     this.area = area;
   }
 
+  @FieldInput(prompt = "Высота над уровнем моря(можно оставить пустой):")
   public void setMetersAboveSeaLevel(Float metersAboveSeaLevel) {
     this.metersAboveSeaLevel = metersAboveSeaLevel;
   }
 
+  @FieldInput(prompt = "Климат города:", flags = 0b010)
   public void setClimate(Climate climate) {
     this.climate = climate;
   }
 
+  @FieldInput(prompt = "Губернатор(можно оставить пустым):")
   public void setGovernor(Human governor) {
     this.governor = governor;
   }
 
+  @FieldInput(prompt = "Уровень жизни города:", flags = 0b010)
   public void setStandardOfLiving(StandardOfLiving standardOfLiving) {
     this.standardOfLiving = standardOfLiving;
   }
 
+  @FieldInput(prompt = "Популяция города:", flags = 0b011)
   public void setPopulation(Integer population) {
     this.population = population;
   }
 
+  @FieldInput(prompt = "Правительство города:", flags = 0b010)
   public void setGovernment(Government government) {
     this.government = government;
   }
