@@ -24,7 +24,7 @@ public class UDPClient {
               (String line) -> {
                 if (line.equalsIgnoreCase("exit")) {
                   System.out.println("Завершение работы клиента.");
-                  CommandRequest exit = new CommandRequest("exit", false);
+                  CommandRequest exit = new CommandRequest("exit", true);
                   sender.send(exit);
                   System.exit(0);
                 }
