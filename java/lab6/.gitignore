@@ -1,0 +1,16 @@
+# Default ignored files
+/shelf/
+/.idea/workspace.xml
+/target
+/.idea
+script1.txt
+script2.txt
+script3.txt
+server.log
+/logs
+collection.xml
+collection.json
+pom.xml
+/client/target
+/server/target
+/common/target
