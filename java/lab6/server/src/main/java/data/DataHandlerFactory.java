@@ -2,7 +2,7 @@ package data;
 
 import io.JsonLoader;
 import io.JsonWriter;
-import io.XmlReader;
+import io.XmlLoader;
 import io.XmlWriter;
 
 public class DataHandlerFactory {
@@ -10,7 +10,7 @@ public class DataHandlerFactory {
     if (fileName.endsWith(".json")) {
       return new JsonLoader();
     } else if (fileName.endsWith(".xml")) {
-      return new XmlReader();
+      return new XmlLoader();
     }
     throw new IllegalArgumentException("Неподдерживаемый формат файла: " + fileName);
   }
