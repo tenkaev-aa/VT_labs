@@ -6,32 +6,27 @@ import java.io.Serializable;
 
 public class CommandRequest implements Serializable {
   private final String commandName;
-  private final boolean silent;
   private final String[] arguments;
   private final City city;
   @Serial private static final long serialVersionUID = 5L;
 
-  public CommandRequest(String commandName, boolean silent) {
-    this(commandName, null, null, silent);
+  public CommandRequest(String commandName) {
+    this(commandName, null, null);
   }
+
 
   public CommandRequest(String commandName, String[] arguments, City city) {
-    this(commandName, arguments, city, false);
-  }
-
-  public CommandRequest(String commandName, String[] arguments, City city, boolean silent) {
     this.commandName = commandName;
     this.arguments = arguments;
     this.city = city;
-    this.silent = silent;
   }
 
-  public CommandRequest(String commandName, String[] arguments, boolean silent) {
-    this(commandName, arguments, null, silent);
+  public CommandRequest(String commandName, String[] arguments) {
+    this(commandName, arguments, null);
   }
 
-  public CommandRequest(String commandName, City city, boolean silent) {
-    this(commandName, new String[0], city, silent);
+  public CommandRequest(String commandName, City city) {
+    this(commandName, new String[0], city);
   }
 
   public String getCommandName() {
@@ -44,9 +39,5 @@ public class CommandRequest implements Serializable {
 
   public City getCity() {
     return city;
-  }
-
-  public boolean isSilent() {
-    return silent;
   }
 }

@@ -38,10 +38,10 @@ import validation.validationService;
  * @see FileReadException
  * @see ValidationException
  */
-public class XmlReader implements DataLoader {
+public class XmlLoader implements DataLoader {
 
   /** Создает объект для чтения данных из XML-файла. */
-  public XmlReader() {}
+  public XmlLoader() {}
 
   /**
    * Читает данные о городах из XML-файла и преобразует их в список объектов {@link CityData}.

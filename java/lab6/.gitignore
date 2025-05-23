@@ -10,7 +10,6 @@ server.log
 /logs
 collection.xml
 collection.json
-pom.xml
 /client/target
 /server/target
 /common/target

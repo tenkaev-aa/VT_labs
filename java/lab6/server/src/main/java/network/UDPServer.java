@@ -8,9 +8,9 @@ import data.DataLoader;
 import data.DataProcessor;
 import exceptions.FileReadException;
 import java.io.*;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.util.List;
 import java.util.Scanner;
 import logging.ServerLogger;
@@ -19,8 +19,9 @@ import util.EnvReader;
 import util.IdGenerator;
 
 public class UDPServer {
-  private static final int PORT = 1488;
+  private static final int port = EnvReader.getPort("SERVER_PORT", 1488);
   private static final int BUFFER_SIZE = 65535;
+  private static volatile boolean isRunning = true;
 
   public static void main(String[] args) throws FileReadException {
     CityComparator cityComparator = new CityComparator();
@@ -51,133 +52,52 @@ public class UDPServer {
     CommandRegistry.register("update", new UpdateCommand(cityManager));
     Runtime.getRuntime().addShutdownHook(new Thread(saveCommand::execute));
 
-    Scanner scanner = new Scanner(System.in);
-    String adminPassword = "123";
-    final boolean[] adminMode = {false};
+    ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+    try (DatagramChannel channel = DatagramChannel.open()) {
+      channel.configureBlocking(false);
+      channel.bind(new InetSocketAddress(port));
 
-    new Thread(
-            () -> {
-              while (true) {
-                System.out.print(adminMode[0] ? "[SERVER-ADMIN] > " : "> ");
-                String input = scanner.nextLine().trim();
+      ServerLogger.log("[SERVER] Сервер запущен на порту " + port);
 
-                if (!adminMode[0] && input.equalsIgnoreCase("switch to admin")) {
-                  System.out.print("Введите пароль администратора: ");
-                  String password = scanner.nextLine().trim();
+      new Thread(new AdminConsoleRunnable(new Scanner(System.in), cityManager, saveCommand, "123")).start();
 
-                  if (password.equals(adminPassword)) {
-                    System.out.println("[SERVER] Доступ администратора предоставлен.");
-                    adminMode[0] = true;
-                  } else {
-                    System.out.println("[SERVER] Неверный пароль.");
-                  }
-                  continue;
-                }
+      while (isRunning) {
+        buffer.clear();
 
-                if (adminMode[0]) {
-                  switch (input) {
-                    case "save_internal" -> {
-                      saveCommand.execute();
-                      ServerLogger.log("[ADMIN] Сохранение коллекции выполнено вручную.");
-                    }
+        SocketAddress clientAddr = channel.receive(buffer);
 
-                    case "status" ->
-                        ServerLogger.log(
-                            "[ADMIN] Элементов в коллекции: " + cityManager.getCollectionSize());
+        if (clientAddr != null) {
+          buffer.flip();
+          ObjectInputStream ois = new ObjectInputStream(
+                  new ByteArrayInputStream(buffer.array(), 0, buffer.limit()));
+          CommandRequest request = (CommandRequest) ois.readObject();
 
-                    case "enable_logging" -> ServerLogger.enable();
+          ServerLogger.log("[REQUEST] От " + clientAddr + " → команда: " + request.getCommandName());
 
-                    case "disable_logging" -> ServerLogger.disable();
+          Command command = CommandRegistry.get(request.getCommandName());
+          CommandResponse response = (command != null)
+                  ? command.execute(request)
+                  : new CommandResponse("Неизвестная команда: " + request.getCommandName());
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ObjectOutputStream oos = new ObjectOutputStream(baos);
+          oos.writeObject(response);
+          oos.flush();
 
-                    case "exit" -> {
-                      ServerLogger.log("[ADMIN] Выход из режима администратора.");
-                      adminMode[0] = false;
-                    }
+          ByteBuffer outBuffer = ByteBuffer.wrap(baos.toByteArray());
+          channel.send(outBuffer, clientAddr);
 
-                    case "shutdown" -> {
-                      System.out.print("Вы уверены, что хотите завершить сервер? (yes/no): ");
-                      String confirm = scanner.nextLine().trim();
-                      if (confirm.equalsIgnoreCase("yes")) {
-                        ServerLogger.log("[ADMIN] Инициирована остановка сервера.");
-                        saveCommand.execute();
-                        System.exit(0);
-                      } else {
-                        ServerLogger.log("[ADMIN] Операция завершения отменена.");
-                      }
-                    }
-
-                    default ->
-                        ServerLogger.log("[ADMIN] Неизвестная команда администратора: " + input);
-                  }
-                } else {
-                  ServerLogger.log(
-                      "Неизвестная команда. Введите 'switch to admin' для доступа к функциям администратора.");
-                }
-              }
-            })
-        .start();
-
-
-    try (DatagramSocket socket = new DatagramSocket(PORT)) {
-      ServerLogger.log("[SERVER] Сервер запущен на порту " + PORT);
-      byte[] buffer = new byte[BUFFER_SIZE];
-
-      while (true) {
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        socket.receive(packet);
-        InetAddress clientAddress = packet.getAddress();
-        int clientPort = packet.getPort();
-
-        // Десериализация запроса
-        ByteArrayInputStream bais =
-            new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
-        ObjectInputStream ois = new ObjectInputStream(bais);
-        CommandRequest request = (CommandRequest) ois.readObject();
-        if ("connect".equalsIgnoreCase(request.getCommandName())) {
-          ServerLogger.log(
-              "[CONNECT] Подключился клиент: " + clientAddress.getHostAddress() + ":" + clientPort);
-          continue;
+          ServerLogger.log("[SERVER] Ответ отправлен " + clientAddr);
         }
-        if ("exit".equalsIgnoreCase(request.getCommandName())) {
-          ServerLogger.log(
-              "[DISCONNECT] Клиент отключился: "
-                  + clientAddress.getHostAddress()
-                  + ":"
-                  + clientPort);
-          continue;
-        }
-        ServerLogger.log(
-            "[REQUEST] От "
-                + clientAddress.getHostAddress()
-                + ":"
-                + clientPort
-                + " → команда: "
-                + request.getCommandName());
-
-        Command command = CommandRegistry.get(request.getCommandName());
-        CommandResponse response;
-        if (command != null) {
-          response = command.execute(request);
-        } else {
-          response = new CommandResponse("Неизвестная команда: " + request.getCommandName());
-        }
-
-        // Сериализация ответа
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(response);
-        oos.flush();
-
-        byte[] responseBytes = baos.toByteArray();
-        DatagramPacket responsePacket =
-            new DatagramPacket(
-                responseBytes, responseBytes.length, packet.getAddress(), packet.getPort());
-        socket.send(responsePacket);
-
-        ServerLogger.log("[SERVER] Ответ отправлен клиенту.");
       }
+
+      ServerLogger.log("[SERVER] Завершение сервера...");
     } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
+      ServerLogger.log("[ERROR] " + e.getMessage());
     }
   }
+
+  public static void shutdown() {
+    isRunning = false;
+  }
+
 }
