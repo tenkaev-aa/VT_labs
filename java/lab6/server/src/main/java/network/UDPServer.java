@@ -59,7 +59,10 @@ public class UDPServer {
 
       ServerLogger.log("[SERVER] Сервер запущен на порту " + port);
 
-      new Thread(new AdminConsoleRunnable(new Scanner(System.in), cityManager, saveCommand, "123")).start();
+      AdminConsoleRunnable console =
+          new AdminConsoleRunnable(new Scanner(System.in), cityManager, saveCommand, "123");
+      Thread adminThread = new Thread(console);
+      adminThread.start();
 
       while (isRunning) {
         buffer.clear();
@@ -68,14 +71,16 @@ public class UDPServer {
 
         if (clientAddr != null) {
           buffer.flip();
-          ObjectInputStream ois = new ObjectInputStream(
-                  new ByteArrayInputStream(buffer.array(), 0, buffer.limit()));
+          ObjectInputStream ois =
+              new ObjectInputStream(new ByteArrayInputStream(buffer.array(), 0, buffer.limit()));
           CommandRequest request = (CommandRequest) ois.readObject();
 
-          ServerLogger.log("[REQUEST] От " + clientAddr + " → команда: " + request.getCommandName());
+          ServerLogger.log(
+              "[REQUEST] От " + clientAddr + " → команда: " + request.getCommandName());
 
           Command command = CommandRegistry.get(request.getCommandName());
-          CommandResponse response = (command != null)
+          CommandResponse response =
+              (command != null)
                   ? command.execute(request)
                   : new CommandResponse("Неизвестная команда: " + request.getCommandName());
           ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -99,5 +104,4 @@ public class UDPServer {
   public static void shutdown() {
     isRunning = false;
   }
-
 }
