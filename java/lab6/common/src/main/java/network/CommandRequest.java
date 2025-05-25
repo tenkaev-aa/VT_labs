@@ -14,7 +14,6 @@ public class CommandRequest implements Serializable {
     this(commandName, null, null);
   }
 
-
   public CommandRequest(String commandName, String[] arguments, City city) {
     this.commandName = commandName;
     this.arguments = arguments;

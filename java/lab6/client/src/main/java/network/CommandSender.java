@@ -49,7 +49,7 @@ public class CommandSender {
           return;
         }
       }
-        System.out.println("[CLIENT] Сервер не ответил вовремя.");
+      System.out.println("[CLIENT] Сервер не ответил вовремя.");
 
     } catch (IOException | ClassNotFoundException e) {
       System.out.println("[CLIENT] Ошибка при передаче команды: " + e.getMessage());

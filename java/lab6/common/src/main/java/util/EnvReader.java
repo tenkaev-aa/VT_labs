@@ -43,6 +43,7 @@ public final class EnvReader {
       throw new IllegalArgumentException("Некорректный порт: " + input);
     }
   }
+
   public static String getFilePath() {
     Scanner scanner = new Scanner(System.in);
     String currentEnv = System.getenv(DEFAULT_ENV_NAME);
