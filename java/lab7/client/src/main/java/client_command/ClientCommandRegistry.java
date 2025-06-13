@@ -18,8 +18,7 @@ public class ClientCommandRegistry {
       Scanner scanner,
       ClientCommandProcessor processor) {
     register(new InsertCommand(sender, reader));
-    register(
-        new UpdateCommand(sender, reader, new Scanner(System.in)));
+    register(new UpdateCommand(sender, reader, scanner));
     register(new ReplaceIfLowerCommand(sender, reader));
     register(new RemoveGreaterCommand(sender, reader));
     register(new LoginCommand(sender));

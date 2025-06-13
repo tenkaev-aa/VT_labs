@@ -22,7 +22,7 @@ public class UpdateCommand implements ClientCommand {
   }
 
   @Override
-  public void execute(String[] args) throws IOException {
+  public void execute(String[] args, DataReader<City> reader) throws IOException {
     if (!CurrentSession.isLoggedIn()) {
       System.out.println("[CLIENT] Ошибка: Неизвестная команда: replace_if_lower");
       return;

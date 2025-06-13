@@ -1,13 +1,15 @@
 package commands;
 
+import auth.AuthUtil;
 import database.dao.CityDAO;
 import database.dao.UserDAO;
 import model.City;
 import network.CommandRequest;
 import network.CommandResponse;
 import storage.CityManager;
-/** Команда для обновления элемента коллекции по id. */
+
 public class UpdateCommand implements Command {
+
   private final CityManager cityManager;
   private final CityDAO cityDAO;
   private final UserDAO userDAO;
@@ -20,6 +22,11 @@ public class UpdateCommand implements Command {
 
   @Override
   public CommandResponse execute(CommandRequest request) {
+    int userId = AuthUtil.authorizeAndGetUserId(request, userDAO);
+    if (userId == -1) {
+      return new CommandResponse("Ошибка авторизации: неверный логин или пароль.");
+    }
+
     String[] args = request.getArguments();
     if (args.length < 1) {
       return new CommandResponse("Ошибка: укажите ID объекта для обновления.");
@@ -34,23 +41,37 @@ public class UpdateCommand implements Command {
 
     City newCity = request.getCity();
     if (newCity == null) {
-      return new CommandResponse("Ошибка: объект City не передан.");
+      return new CommandResponse("Ошибка: объект города не передан.");
     }
 
-    int userId = userDAO.getUserId(request.getUsername());
-
-    boolean success = cityDAO.update(id, newCity, userId);
-    if (!success) {
-      return new CommandResponse("Ошибка: объект не существует или принадлежит другому пользователю.");
+    City existing = cityManager.getCity(id);
+    if (existing == null) {
+      return new CommandResponse("Ошибка: объект с ID " + id + " не найден.");
     }
 
-    newCity.setId((int) id);
+    if (existing.getOwnerId() != userId) {
+      return new CommandResponse("Ошибка: вы не являетесь владельцем этого объекта.");
+    }
+
+    newCity.setId(id);
+    newCity.setOwnerId(userId);
+
+    boolean updated = cityDAO.update(id, newCity, userId);
+    if (!updated) {
+      return new CommandResponse("Ошибка при обновлении объекта в базе данных.");
+    }
+
     cityManager.updateCity(id, newCity);
-    return new CommandResponse("Объект успешно обновлён.");
+    return new CommandResponse("Объект с ID " + id + " успешно обновлён.");
   }
 
   @Override
   public String getDescription() {
-    return "обновить объект по ID (если владелец совпадает)";
+    return "обновить ваш объект по ID";
+  }
+
+  @Override
+  public boolean isAuthorizedOnly() {
+    return true;
   }
 }

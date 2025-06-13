@@ -1,5 +1,7 @@
 package client_command;
 
+import data.DataReader;
+import model.City;
 import network.CommandRequest;
 import network.CommandResponse;
 import network.CommandSender;
@@ -14,7 +16,7 @@ public class HelpCommand implements ClientCommand {
   }
 
   @Override
-  public void execute(String[] args) {
+  public void execute(String[] args, DataReader<City> reader) {
     CommandRequest request =
         new CommandRequest(
             "help", args, null, CurrentSession.getUsername(), CurrentSession.getPassword());

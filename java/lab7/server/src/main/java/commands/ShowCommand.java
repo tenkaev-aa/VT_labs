@@ -1,24 +1,32 @@
 package commands;
 
-import model.City;
+import auth.AuthUtil;
+import database.dao.UserDAO;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import model.City;
 import network.CommandRequest;
 import network.CommandResponse;
 import storage.CityManager;
 
-/** Команда для отображения всех элементов коллекции. */
 public class ShowCommand implements Command {
 
   private final CityManager cityManager;
+  private final UserDAO userDAO;
 
-  public ShowCommand(CityManager cityManager) {
+  public ShowCommand(CityManager cityManager, UserDAO userDAO) {
     this.cityManager = cityManager;
+    this.userDAO = userDAO;
   }
 
   @Override
   public CommandResponse execute(CommandRequest request) {
+    int userId = AuthUtil.authorizeAndGetUserId(request, userDAO);
+    if (userId == -1) {
+      return new CommandResponse("Ошибка авторизации: неверный логин или пароль.");
+    }
+
     if (cityManager.getCollectionSize() == 0) {
       return new CommandResponse("Коллекция пуста.");
     }
@@ -33,6 +41,11 @@ public class ShowCommand implements Command {
 
   @Override
   public String getDescription() {
-    return "вывести все элементы коллекции";
+    return "вывести все элементы коллекции в алфавитном порядке";
+  }
+
+  @Override
+  public boolean isAuthorizedOnly() {
+    return true;
   }
 }

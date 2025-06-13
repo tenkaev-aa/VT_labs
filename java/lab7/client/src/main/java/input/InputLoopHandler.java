@@ -26,7 +26,7 @@ public class InputLoopHandler {
       System.out.print("> ");
       String input = readLine().trim();
       if (!input.isEmpty()) {
-        processor.process(input);
+        processor.process(input, activeReader);
       }
     }
   }

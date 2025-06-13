@@ -1,6 +1,7 @@
 package client_command;
 
 import data.DataReader;
+import data.FileDataReader;
 import java.io.*;
 import java.util.*;
 import model.City;
@@ -17,7 +18,7 @@ public class ExecuteScriptCommand implements ClientCommand {
   }
 
   @Override
-  public void execute(String[] args) {
+  public void execute(String[] args, DataReader<City> reader) {
     if (!CurrentSession.isLoggedIn()) {
       System.out.println("[CLIENT] Неизвестная команда: execute_script");
       return;
@@ -52,6 +53,7 @@ public class ExecuteScriptCommand implements ClientCommand {
       updatedScripts.add(canonicalPath);
 
       try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        FileDataReader<City> scriptReader = new FileDataReader<>(reader);
         String line;
         while ((line = reader.readLine()) != null) {
           line = line.trim();
@@ -66,7 +68,7 @@ public class ExecuteScriptCommand implements ClientCommand {
             File nested = new File(parts[1]).getAbsoluteFile();
             executeFromFile(nested, updatedScripts);
           } else {
-            processor.process(line);
+            processor.process(line, scriptReader);
           }
         }
       }

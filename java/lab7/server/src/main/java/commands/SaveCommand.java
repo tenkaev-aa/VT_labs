@@ -1,6 +1,5 @@
 package commands;
 
-import model.City;
 import data.CityData;
 import data.CityDataConverter;
 import data.DataHandlerFactory;
@@ -8,6 +7,7 @@ import data.DataWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import model.City;
 import storage.CityManager;
 
 /**

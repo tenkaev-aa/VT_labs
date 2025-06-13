@@ -1,7 +1,7 @@
 package data;
 
-import model.City;
 import java.util.List;
+import model.City;
 import storage.CityManager;
 
 public class DataProcessor {

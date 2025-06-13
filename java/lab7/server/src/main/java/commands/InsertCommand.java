@@ -1,6 +1,6 @@
 package commands;
 
-
+import auth.AuthUtil;
 import database.dao.CityDAO;
 import database.dao.UserDAO;
 import model.City;
@@ -29,23 +29,16 @@ public class InsertCommand implements Command {
     }
 
     try {
-      String username = request.getUsername();
-      if (username == null) {
-        return new CommandResponse("Ошибка: не указан пользователь.");
-      }
-
-      int ownerId = userDAO.getUserId(username);
+      int ownerId = AuthUtil.authorizeAndGetUserId(request, userDAO);
       if (ownerId == -1) {
-        return new CommandResponse("Ошибка: пользователь не найден.");
+        return new CommandResponse("Ошибка авторизации: неверный логин или пароль.");
       }
 
-      // Вставка в БД
       City insertedCity = cityDAO.insert(city, ownerId);
       if (insertedCity == null) {
         return new CommandResponse("Ошибка: не удалось сохранить город в базу данных.");
       }
 
-      // Добавление в коллекцию (в памяти)
       cityManager.addCity(insertedCity);
 
       return new CommandResponse("Город успешно добавлен с ID: " + insertedCity.getId());
@@ -57,6 +50,11 @@ public class InsertCommand implements Command {
 
   @Override
   public String getDescription() {
-    return "добавить новый элемент (в базу и коллекцию)";
+    return "добавить новый элемент в коллекцию";
+  }
+
+  @Override
+  public boolean isAuthorizedOnly() {
+    return true;
   }
 }

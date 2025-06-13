@@ -1,10 +1,10 @@
 package network;
 
-import model.City;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import model.City;
 
 public class CommandResponse implements Serializable {
   private final String message;

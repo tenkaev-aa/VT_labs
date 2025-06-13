@@ -1,7 +1,5 @@
 package io;
 
-import model.Coordinates;
-import model.Human;
 import data.CityData;
 import data.DataWriter;
 import exceptions.FileWriteException;
@@ -10,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import model.Coordinates;
+import model.Human;
 
 /** Класс для записи данных в XML-файл. */
 public class XmlWriter implements DataWriter {

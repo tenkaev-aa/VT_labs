@@ -1,11 +1,11 @@
 package data;
 
-import model.Coordinates;
-import model.Human;
 import enums.Climate;
 import enums.Government;
 import enums.StandardOfLiving;
 import java.time.LocalDateTime;
+import model.Coordinates;
+import model.Human;
 
 public class CityData {
   private Integer id;

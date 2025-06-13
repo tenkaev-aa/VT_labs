@@ -1,8 +1,8 @@
 package data;
 
-import model.City;
 import java.util.List;
 import java.util.stream.Collectors;
+import model.City;
 
 public class CityDataConverter {
   public static CityData toCityData(City city) {

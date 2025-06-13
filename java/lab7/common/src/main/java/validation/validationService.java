@@ -1,10 +1,10 @@
 package validation;
 
-import model.Coordinates;
 import enums.Climate;
 import enums.Government;
 import enums.StandardOfLiving;
 import exceptions.ValidationException;
+import model.Coordinates;
 
 public class validationService {
 

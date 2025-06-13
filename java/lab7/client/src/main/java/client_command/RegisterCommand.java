@@ -1,6 +1,8 @@
 package client_command;
 
+import data.DataReader;
 import java.util.Scanner;
+import model.City;
 import network.CommandRequest;
 import network.CommandResponse;
 import network.CommandSender;
@@ -16,7 +18,7 @@ public class RegisterCommand implements ClientCommand {
   }
 
   @Override
-  public void execute(String[] args) {
+  public void execute(String[] args, DataReader<City> reader) {
     System.out.print("Логин: ");
     String username = scanner.nextLine().trim();
 

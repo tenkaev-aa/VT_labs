@@ -1,6 +1,5 @@
 package network;
 
-import commands.SaveCommand;
 import java.util.Scanner;
 import logging.ServerLogger;
 import storage.CityManager;
@@ -12,16 +11,13 @@ import storage.CityManager;
 public class AdminConsoleRunnable implements Runnable {
   private final Scanner scanner;
   private final CityManager cityManager;
-  private final SaveCommand saveCommand;
   private final String adminPassword;
   private volatile boolean running = true;
   private boolean adminMode = false;
 
-  public AdminConsoleRunnable(
-      Scanner scanner, CityManager cityManager, SaveCommand saveCommand, String adminPassword) {
+  public AdminConsoleRunnable(Scanner scanner, CityManager cityManager, String adminPassword) {
     this.scanner = scanner;
     this.cityManager = cityManager;
-    this.saveCommand = saveCommand;
     this.adminPassword = adminPassword;
   }
 
@@ -48,8 +44,6 @@ public class AdminConsoleRunnable implements Runnable {
           case "status" ->
               ServerLogger.log(
                   "[SERVER] Элементов в коллекции: " + cityManager.getCollectionSize());
-
-          case "save_internal" -> saveCommand.execute();
 
           case "exit" -> {
             ServerLogger.log("[ADMIN] Выход из режима администратора.");

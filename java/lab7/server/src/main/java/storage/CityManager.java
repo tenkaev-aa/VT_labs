@@ -1,9 +1,9 @@
 package storage;
 
-import model.City;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
+import model.City;
 import util.DateUtils;
 import util.IdGenerator;
 
@@ -52,13 +52,13 @@ public class CityManager {
     collection.put(city.getId(), city);
     updateLastModifiedTime();
   }
+
   public void loadAllFromDB(Collection<City> fromDb) {
     collection.clear();
     for (City city : fromDb) {
       collection.put(city.getId(), city);
     }
   }
-
 
   /**
    * Обновляет город по ID.
@@ -119,6 +119,18 @@ public class CityManager {
       return -1; // Возвращаем -1, если коллекция пуста
     }
     return Collections.max(collection.keySet());
+  }
+
+  public void removeCitiesOwnedBy(int ownerId) {
+    synchronized (this) {
+      collection
+          .entrySet()
+          .removeIf(
+              entry -> {
+                City city = entry.getValue();
+                return city.getOwnerId() == ownerId;
+              });
+    }
   }
 
   /** Очищает коллекцию. */

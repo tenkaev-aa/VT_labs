@@ -1,7 +1,5 @@
 package io;
 
-import model.Coordinates;
-import model.Human;
 import data.CityData;
 import data.DataLoader;
 import enums.Climate;
@@ -17,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import model.Coordinates;
+import model.Human;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

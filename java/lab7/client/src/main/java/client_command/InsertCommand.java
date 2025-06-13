@@ -19,7 +19,7 @@ public class InsertCommand implements ClientCommand {
   }
 
   @Override
-  public void execute(String[] args) throws IOException {
+  public void execute(String[] args, DataReader<City> reader) throws IOException {
     if (!CurrentSession.isLoggedIn()) {
       System.out.println("[CLIENT] Неизвестная команда: insert");
       return;

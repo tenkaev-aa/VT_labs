@@ -1,11 +1,13 @@
 package client_command;
 
+import data.DataReader;
+import model.City;
 import session.CurrentSession;
 
 public class LogoutCommand implements ClientCommand {
 
   @Override
-  public void execute(String[] args) {
+  public void execute(String[] args, DataReader<City> reader) {
     if (!CurrentSession.isLoggedIn()) {
       System.out.println("[CLIENT] Вы не авторизованы.");
       return;

@@ -1,9 +1,6 @@
 package input_object;
 
 import builder.Builder;
-import model.City;
-import model.Coordinates;
-import model.Human;
 import data.DataReader;
 import enums.Climate;
 import enums.Government;
@@ -12,6 +9,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import model.City;
+import model.Coordinates;
+import model.Human;
 import util.DateUtils;
 import util.IdGenerator;
 

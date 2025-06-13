@@ -1,8 +1,8 @@
 package network;
 
-import model.City;
 import java.io.Serial;
 import java.io.Serializable;
+import model.City;
 
 public class CommandRequest implements Serializable {
   private final String commandName;
@@ -15,6 +15,7 @@ public class CommandRequest implements Serializable {
   public CommandRequest(String commandName, String username, String password) {
     this(commandName, new String[0], null, username, password);
   }
+
   public CommandRequest(String commandName) {
     this(commandName, new String[0], null, null, null);
   }
@@ -27,7 +28,8 @@ public class CommandRequest implements Serializable {
     this(commandName, new String[0], city, username, password);
   }
 
-  public CommandRequest(String commandName, String[] arguments, City city, String username, String password) {
+  public CommandRequest(
+      String commandName, String[] arguments, City city, String username, String password) {
     this.commandName = commandName;
     this.arguments = arguments;
     this.city = city;
@@ -35,9 +37,7 @@ public class CommandRequest implements Serializable {
     this.password = password;
   }
 
-
-
-    public String getCommandName() {
+  public String getCommandName() {
     return commandName;
   }
 
@@ -48,6 +48,7 @@ public class CommandRequest implements Serializable {
   public City getCity() {
     return city;
   }
+
   public String getUsername() {
     return username;
   }

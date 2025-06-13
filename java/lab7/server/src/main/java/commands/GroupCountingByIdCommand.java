@@ -1,5 +1,7 @@
 package commands;
 
+import auth.AuthUtil;
+import database.dao.UserDAO;
 import java.util.Map;
 import java.util.stream.Collectors;
 import network.CommandRequest;
@@ -12,13 +14,20 @@ import storage.CityManager;
 public class GroupCountingByIdCommand implements Command {
 
   private final CityManager cityManager;
+  private final UserDAO userDAO;
 
-  public GroupCountingByIdCommand(CityManager cityManager) {
+  public GroupCountingByIdCommand(CityManager cityManager, UserDAO userDAO) {
     this.cityManager = cityManager;
+    this.userDAO = userDAO;
   }
 
   @Override
   public CommandResponse execute(CommandRequest request) {
+    int userId = AuthUtil.authorizeAndGetUserId(request, userDAO);
+    if (userId == -1) {
+      return new CommandResponse("Ошибка авторизации: неверный логин или пароль.");
+    }
+
     if (cityManager.getCollection().isEmpty()) {
       return new CommandResponse("Коллекция пуста. Нечего группировать.");
     }
@@ -44,6 +53,11 @@ public class GroupCountingByIdCommand implements Command {
 
   @Override
   public String getDescription() {
-    return "сгруппировать элементы по id";
+    return "сгруппировать элементы по четности ID и посчитать количество";
+  }
+
+  @Override
+  public boolean isAuthorizedOnly() {
+    return true;
   }
 }

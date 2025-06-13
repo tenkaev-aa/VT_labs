@@ -23,7 +23,7 @@ public class RemoveGreaterCommand implements ClientCommand {
   }
 
   @Override
-  public void execute(String[] args) {
+  public void execute(String[] args, DataReader<City> reader) {
     if (!CurrentSession.isLoggedIn()) {
       System.out.println("[CLIENT] Ошибка: Неизвестная команда: remove_greater ");
       return;

@@ -1,9 +1,11 @@
 package commands;
 
-import model.City;
-import model.CityComparator;
+import auth.AuthUtil;
+import database.dao.UserDAO;
 import java.util.List;
 import java.util.stream.Collectors;
+import model.City;
+import model.CityComparator;
 import network.CommandRequest;
 import network.CommandResponse;
 import storage.CityManager;
@@ -12,13 +14,20 @@ import storage.CityManager;
 public class PrintAscendingCommand implements Command {
 
   private final CityManager cityManager;
+  private final UserDAO userDAO;
 
-  public PrintAscendingCommand(CityManager cityManager) {
+  public PrintAscendingCommand(CityManager cityManager, UserDAO userDAO) {
     this.cityManager = cityManager;
+    this.userDAO = userDAO;
   }
 
   @Override
   public CommandResponse execute(CommandRequest request) {
+    int userId = AuthUtil.authorizeAndGetUserId(request, userDAO);
+    if (userId == -1) {
+      return new CommandResponse("Ошибка авторизации: неверный логин или пароль.");
+    }
+
     List<City> allCities = cityManager.getAllCities();
 
     if (allCities.isEmpty()) {
@@ -33,6 +42,11 @@ public class PrintAscendingCommand implements Command {
 
   @Override
   public String getDescription() {
-    return "вывести элементы в порядке возрастания";
+    return "вывести элементы коллекции в порядке возрастания";
+  }
+
+  @Override
+  public boolean isAuthorizedOnly() {
+    return true;
   }
 }

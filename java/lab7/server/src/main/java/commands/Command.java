@@ -12,6 +12,15 @@ public interface Command {
    */
   CommandResponse execute(CommandRequest request);
 
+  default boolean isAuthorizedOnly() {
+    return false;
+  }
+
+  /** Доступна только неавторизованным пользователям. Например: login, register. */
+  default boolean isInternalOnly() {
+    return false;
+  }
+
   /**
    * @return краткое описание команды
    */

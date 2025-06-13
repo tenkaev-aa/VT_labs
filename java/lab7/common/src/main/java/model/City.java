@@ -154,6 +154,16 @@ public class City implements Comparable<City>, Serializable {
     this.id = id;
   }
 
+  private int ownerId;
+
+  public int getOwnerId() {
+    return ownerId;
+  }
+
+  public void setOwnerId(int ownerId) {
+    this.ownerId = ownerId;
+  }
+
   /**
    * Устанавливает название города.
    *

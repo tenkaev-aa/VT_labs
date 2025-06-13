@@ -1,6 +1,8 @@
 package client_command;
 
+import data.DataReader;
 import java.util.Scanner;
+import model.City;
 import network.CommandRequest;
 import network.CommandResponse;
 import network.CommandSender;
@@ -14,7 +16,7 @@ public class LoginCommand implements ClientCommand {
   }
 
   @Override
-  public void execute(String[] args) {
+  public void execute(String[] args, DataReader<City> reader) {
     Scanner scanner = new Scanner(System.in);
 
     System.out.print("Логин: ");
