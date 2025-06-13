@@ -4,10 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-
 import model.City;
 import session.CurrentSession;
-
 
 public class CommandSender {
   private final DatagramChannel channel;
@@ -21,7 +19,6 @@ public class CommandSender {
     this.serverAddress = new InetSocketAddress(host, port);
   }
 
-
   public void send(String commandName, String[] args, City city) {
     String username = CurrentSession.getUsername();
     String password = CurrentSession.getPassword();
@@ -32,19 +29,16 @@ public class CommandSender {
     }
 
     CommandRequest request = new CommandRequest(commandName, args, city, username, password);
-    send(request); // делегируем существующему методу
+    send(request);
   }
-
 
   public void send(String commandName, String[] args) {
     send(commandName, args, null);
   }
 
-
   public void send(String commandName) {
     send(commandName, new String[0], null);
   }
-
 
   public CommandResponse send(CommandRequest request) {
     try {
@@ -65,7 +59,7 @@ public class CommandSender {
         if (responseAddr != null) {
           receiveBuffer.flip();
           ByteArrayInputStream bais =
-                  new ByteArrayInputStream(receiveBuffer.array(), 0, receiveBuffer.limit());
+              new ByteArrayInputStream(receiveBuffer.array(), 0, receiveBuffer.limit());
           ObjectInputStream ois = new ObjectInputStream(bais);
           CommandResponse response = (CommandResponse) ois.readObject();
 
@@ -86,4 +80,3 @@ public class CommandSender {
     return null;
   }
 }
-

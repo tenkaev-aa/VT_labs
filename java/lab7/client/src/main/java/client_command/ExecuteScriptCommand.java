@@ -1,65 +1,62 @@
 package client_command;
 
-
 import data.DataReader;
-import model.City;
-import network.CommandSender;
 import java.io.*;
 import java.util.*;
+import model.City;
+import session.CurrentSession;
 
-public class ExecuteScriptCommand {
+public class ExecuteScriptCommand implements ClientCommand {
   private final ClientCommandProcessor processor;
-  private final File rootFile;
-  private final Set<String> activeScripts = new HashSet<>();
   private final DataReader<City> reader;
+  private final Set<String> activeScripts = new HashSet<>();
 
-  public ExecuteScriptCommand(ClientCommandProcessor processor, CommandSender sender, DataReader<City> reader) {
+  public ExecuteScriptCommand(ClientCommandProcessor processor, DataReader<City> reader) {
     this.processor = processor;
     this.reader = reader;
-    this.rootFile = null;
   }
 
-  private ExecuteScriptCommand(ClientCommandProcessor processor, DataReader<City> reader, File currentFile, Set<String> inheritedScripts) {
-    this.processor = processor;
-    this.reader = reader;
-    this.rootFile = currentFile;
-    this.activeScripts.addAll(inheritedScripts);
-  }
-
-  public void execute(Scanner scanner) {
-    System.out.print("Введите имя файла скрипта: ");
-    String filename = scanner.nextLine().trim();
-    File file = new File(filename).getAbsoluteFile();
-    executeFromFile(file);
-  }
-
-  private void executeFromFile(File file) {
-    if (!file.exists() || !file.canRead()) {
-      System.out.println("[CLIENT] Файл не найден или недоступен: " + file);
+  @Override
+  public void execute(String[] args) {
+    if (!CurrentSession.isLoggedIn()) {
+      System.out.println("[CLIENT] Неизвестная команда: execute_script");
       return;
     }
+    if (args.length == 0) {
+      System.out.print("Введите имя файла скрипта: ");
+      Scanner scanner = new Scanner(System.in);
+      String filename = scanner.nextLine().trim();
+      executeFromFile(new File(filename).getAbsoluteFile(), new HashSet<>());
+    } else {
+      File file = new File(args[0]).getAbsoluteFile();
+      executeFromFile(file, new HashSet<>());
+    }
+  }
 
-    String canonicalPath;
+  private void executeFromFile(File file, Set<String> inheritedScripts) {
     try {
-      canonicalPath = file.getCanonicalPath();
-    } catch (IOException e) {
-      System.out.println("[CLIENT] Ошибка чтения пути: " + e.getMessage());
-      return;
-    }
+      String canonicalPath = file.getCanonicalPath();
+      if (inheritedScripts.contains(canonicalPath)) {
+        System.out.println("[CLIENT] Рекурсивное выполнение скрипта запрещено: " + file.getName());
+        return;
+      }
 
-    if (activeScripts.contains(canonicalPath)) {
-      System.out.println("[CLIENT] Рекурсивное выполнение скрипта запрещено: " + file.getName());
-      return;
-    }
+      if (!file.exists() || !file.canRead()) {
+        System.out.println("[CLIENT] Файл не найден или недоступен: " + file);
+        return;
+      }
 
-    System.out.println("[CLIENT] Выполнение скрипта: " + file.getName());
+      System.out.println("[CLIENT] Выполнение скрипта: " + file.getName());
 
-    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-      activeScripts.add(canonicalPath);
-      String line;
-      while ((line = reader.readLine()) != null) {
-        line = line.trim();
-        if (!line.isEmpty()) {
+      Set<String> updatedScripts = new HashSet<>(inheritedScripts);
+      updatedScripts.add(canonicalPath);
+
+      try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          line = line.trim();
+          if (line.isEmpty()) continue;
+
           if (line.toLowerCase().startsWith("execute_script")) {
             String[] parts = line.split("\\s+");
             if (parts.length < 2) {
@@ -67,7 +64,7 @@ public class ExecuteScriptCommand {
               continue;
             }
             File nested = new File(parts[1]).getAbsoluteFile();
-            new ExecuteScriptCommand(processor, this.reader, nested, activeScripts).executeFromFile(nested);
+            executeFromFile(nested, updatedScripts);
           } else {
             processor.process(line);
           }
@@ -75,8 +72,11 @@ public class ExecuteScriptCommand {
       }
     } catch (IOException e) {
       System.out.println("[CLIENT] Ошибка выполнения скрипта: " + e.getMessage());
-    } finally {
-      activeScripts.remove(canonicalPath);
     }
+  }
+
+  @Override
+  public String getName() {
+    return "execute_script";
   }
 }
