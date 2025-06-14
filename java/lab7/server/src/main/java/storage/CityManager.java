@@ -54,9 +54,11 @@ public class CityManager {
   }
 
   public void loadAllFromDB(Collection<City> fromDb) {
-    collection.clear();
-    for (City city : fromDb) {
-      collection.put(city.getId(), city);
+    synchronized (collection) {
+      collection.clear();
+      for (City city : fromDb) {
+        collection.put(city.getId(), city);
+      }
     }
   }
 
@@ -135,9 +137,12 @@ public class CityManager {
 
   /** Очищает коллекцию. */
   public void clearCollection() {
-    updateLastModifiedTime();
-    collection.clear();
+    synchronized (collection) {
+      collection.clear();
+      updateLastModifiedTime();
+    }
   }
+
 
   /**
    * Удаляет элементы, удовлетворяющие условию.
@@ -146,12 +151,14 @@ public class CityManager {
    * @return количество удаленных элементов.
    */
   public int removeIf(Predicate<City> condition) {
-    int initialSize = collection.size();
-    collection.values().removeIf(condition);
-    if (initialSize != collection.size()) {
-      updateLastModifiedTime();
+    synchronized (collection) {
+      int initialSize = collection.size();
+      collection.values().removeIf(condition);
+      if (initialSize != collection.size()) {
+        updateLastModifiedTime();
+      }
+      return initialSize - collection.size();
     }
-    return initialSize - collection.size();
   }
 
   /**

@@ -90,12 +90,12 @@ public class UDPServer {
 
       ServerLogger.log("[REQUEST] От " + clientAddr + " → команда: " + request.getCommandName());
 
-      new Thread(
+      readPool.submit(
               () -> {
                 CommandResponse response = processRequest(request, commandManager, userDAO);
                 writePool.submit(() -> sendResponse(response, clientAddr, channel));
-              })
-          .start();
+              });
+
 
     } catch (IOException | ClassNotFoundException e) {
       ServerLogger.log("[ERROR] Ошибка при обработке запроса: " + e.getMessage());
