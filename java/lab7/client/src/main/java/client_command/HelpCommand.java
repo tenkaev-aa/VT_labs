@@ -18,8 +18,7 @@ public class HelpCommand implements ClientCommand {
   @Override
   public void execute(String[] args, DataReader<City> reader) {
     CommandRequest request =
-        new CommandRequest(
-            "help", args, null, CurrentSession.getUsername(), CurrentSession.getPassword());
+        new CommandRequest("help", args, (City) null, CurrentSession.getToken().orElse(null));
 
     CommandResponse response = sender.send(request);
   }

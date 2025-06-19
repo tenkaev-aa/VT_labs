@@ -1,21 +1,14 @@
 package model;
 
-import exceptions.ValidationException;
 import input_object.FieldInput;
 import java.io.Serial;
 import java.io.Serializable;
-import validation.*;
 
 /**
  * Класс, представляющий координаты города.
  *
  * <p>Объект этого класса хранит координаты города в виде двух значений: - {@code x} — координата по
  * оси X (тип {@code double}). - {@code y} — координата по оси Y (тип {@code int}).
- *
- * <p>При создании объекта координат используется сервис {@link validationService} для валидации
- * значения координаты {@code x}. Значение {@code y} может быть любым.
- *
- * @see validationService
  */
 public class Coordinates implements Serializable {
   @Serial private static final long serialVersionUID = 2L;
@@ -31,7 +24,6 @@ public class Coordinates implements Serializable {
    *
    * @param x координата по оси X.
    * @param y координата по оси Y.
-   * @throws ValidationException если значение {@code x} не проходит валидацию.
    */
   public Coordinates(double x, int y) {
     this.x = x;

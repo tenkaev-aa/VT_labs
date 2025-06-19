@@ -40,7 +40,7 @@ public class ClientCommandProcessor {
     try {
       CommandRequest request =
           new CommandRequest(
-              commandName, args, null, CurrentSession.getUsername(), CurrentSession.getPassword());
+              commandName, args, (City) null, CurrentSession.getToken().orElse(null));
 
       CommandResponse response = sender.send(request);
 

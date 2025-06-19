@@ -1,9 +1,9 @@
 package commands;
 
-import auth.PasswordHasher;
 import database.dao.UserDAO;
 import network.CommandRequest;
 import network.CommandResponse;
+import session.SessionManager;
 
 public class RegisterCommand implements Command {
   private final UserDAO userDAO;
@@ -14,21 +14,21 @@ public class RegisterCommand implements Command {
 
   @Override
   public CommandResponse execute(CommandRequest request) {
-    String username = request.getUsername();
-    String password = request.getPassword();
 
-    if (username == null || password == null || username.isBlank() || password.isBlank()) {
+    String[] args = request.getArguments();
+    String username = args[0];
+    String saltHex = args[1];
+    String hashedPassword = args[2];
+
+    if (username == null || saltHex == null || hashedPassword == null) {
       return new CommandResponse("Ошибка: укажите имя и пароль");
     }
 
-    byte[] salt = PasswordHasher.generateSalt();
-    String hash = PasswordHasher.hash(password, salt);
-    String saltHex = PasswordHasher.bytesToHex(salt);
-
-    boolean success = userDAO.register(username, hash, saltHex);
+    boolean success = userDAO.register(username, hashedPassword, saltHex);
 
     if (success) {
-      return new CommandResponse("Регистрация прошла успешно");
+      String token = SessionManager.createToken(username);
+      return new CommandResponse("Регистрация прошла успешно", token);
     } else {
       return new CommandResponse("Пользователь с таким именем уже существует");
     }

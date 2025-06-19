@@ -14,4 +14,5 @@ collection.json
 /server/target
 /common/target
 /server/src/main/resources/
+/client/src/main/resources/
 

@@ -24,24 +24,25 @@ public class UpdateCommand implements ClientCommand {
   @Override
   public void execute(String[] args, DataReader<City> reader) throws IOException {
     if (!CurrentSession.isLoggedIn()) {
-      System.out.println("[CLIENT] Ошибка: Неизвестная команда: replace_if_lower");
+      System.out.println("[CLIENT] Ошибка: Неизвестная команда: update");
       return;
     }
     if (args.length < 1) {
       System.out.println("[CLIENT] Укажите ID объекта для обновления.");
       return;
     }
+    String idArg = args[0];
 
     CommandRequest checkRequest =
         new CommandRequest(
-            "check-ownership",
-            new String[] {args[0]},
-            null,
-            CurrentSession.getUsername(),
-            CurrentSession.getPassword());
+            "check_ownership",
+            new String[] {idArg},
+            (City) null,
+            CurrentSession.getToken().orElse(null));
+
     CommandResponse checkResponse = sender.send(checkRequest);
-    if (!checkResponse.getMessage().toLowerCase().contains("ok")) {
-      System.out.println("[CLIENT] " + checkResponse.getMessage());
+
+    if (!checkResponse.getMessage().equals("OK")) {
       return;
     }
 
@@ -50,11 +51,7 @@ public class UpdateCommand implements ClientCommand {
 
     CommandRequest updateRequest =
         new CommandRequest(
-            "update",
-            new String[] {args[0]},
-            city,
-            CurrentSession.getUsername(),
-            CurrentSession.getPassword());
+            getName(), new String[] {args[0]}, city, CurrentSession.getToken().orElse(null));
     CommandResponse response = sender.send(updateRequest);
   }
 

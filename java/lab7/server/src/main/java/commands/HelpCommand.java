@@ -1,5 +1,6 @@
 package commands;
 
+import auth.AuthUtil;
 import java.util.stream.Collectors;
 import network.CommandRequest;
 import network.CommandResponse;
@@ -13,13 +14,16 @@ public class HelpCommand implements Command {
 
   @Override
   public CommandResponse execute(CommandRequest request) {
-    boolean isLoggedIn = request.getUsername() != null && request.getPassword() != null;
+    boolean isLoggedIn =
+        AuthUtil.authorizeToken(request)
+            || (request.getUsername().isPresent() && request.getPassword().isPresent());
 
     String helpText =
         commandManager.getAll().entrySet().stream()
             .filter(
                 e -> {
                   Command cmd = e.getValue();
+                  if (cmd.isHidden()) return false;
                   if (cmd.isInternalOnly()) return !isLoggedIn;
                   if (cmd.isAuthorizedOnly()) return isLoggedIn;
                   return true;

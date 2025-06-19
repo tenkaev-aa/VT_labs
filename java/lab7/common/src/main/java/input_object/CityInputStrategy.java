@@ -13,7 +13,6 @@ import model.City;
 import model.Coordinates;
 import model.Human;
 import util.DateUtils;
-import util.IdGenerator;
 
 public class CityInputStrategy implements InputStrategy<City> {
   private final DataReader<City> reader;
@@ -26,7 +25,6 @@ public class CityInputStrategy implements InputStrategy<City> {
   public City inputObject() throws IOException {
     Builder<City> builder = new Builder<>(new City());
     return builder
-        .set(City::setId, IdGenerator.getNextId())
         .set(City::setCreationDate, DateUtils.getCurrentDateTime())
         .set(
             City::setName,

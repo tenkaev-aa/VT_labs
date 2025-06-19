@@ -1,11 +1,13 @@
 package client_command;
 
 import data.DataReader;
+import java.io.Console;
 import java.util.Scanner;
 import model.City;
 import network.CommandRequest;
 import network.CommandResponse;
 import network.CommandSender;
+import network.PasswordHasher;
 import session.CurrentSession;
 
 public class RegisterCommand implements ClientCommand {
@@ -19,19 +21,32 @@ public class RegisterCommand implements ClientCommand {
 
   @Override
   public void execute(String[] args, DataReader<City> reader) {
-    System.out.print("Логин: ");
-    String username = scanner.nextLine().trim();
+    String username;
+    String password;
 
-    System.out.print("Пароль: ");
-    String password = scanner.nextLine().trim();
+    Console console = System.console();
+    if (console != null) {
+      username = console.readLine("Логин: ").trim();
+      char[] pwdChars = console.readPassword("Пароль: ");
+      password = new String(pwdChars);
+    } else {
+      System.out.print("Логин: ");
+      username = scanner.nextLine().trim();
+      System.out.print("Пароль: ");
+      password = scanner.nextLine().trim();
+    }
+
+    byte[] salt = PasswordHasher.getSalt();
+    String saltHex = PasswordHasher.bytesToHex(salt);
+    String hashed = PasswordHasher.hash(password, salt);
 
     CommandRequest request =
-        new CommandRequest("register", new String[0], null, username, password);
+        new CommandRequest("register", new String[] {username, saltHex, hashed}, null, null, null);
 
     CommandResponse response = sender.send(request);
 
     if (response.getMessage().toLowerCase().contains("успешно")) {
-      CurrentSession.login(username, password);
+      CurrentSession.login(username, password, response.getSessionToken().orElse(null));
       System.out.println("[CLIENT] Вход выполнен как: " + username);
     } else {
       System.out.println("[CLIENT] " + response.getMessage());

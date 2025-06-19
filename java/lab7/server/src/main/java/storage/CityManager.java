@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.function.Predicate;
 import model.City;
 import util.DateUtils;
-import util.IdGenerator;
 
 /**
  * Класс для управления коллекцией городов.
@@ -88,7 +87,6 @@ public class CityManager {
       throw new IllegalArgumentException("Город с ID " + id + " не найден.");
     }
     collection.remove(id);
-    IdGenerator.releaseId(id);
     updateLastModifiedTime();
   }
 
@@ -142,7 +140,6 @@ public class CityManager {
       updateLastModifiedTime();
     }
   }
-
 
   /**
    * Удаляет элементы, удовлетворяющие условию.

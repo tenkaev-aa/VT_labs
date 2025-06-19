@@ -1,12 +1,11 @@
 package network;
 
-import auth.PasswordHasher;
-import auth.UserRecord;
+import auth.AuthUtil;
 import commands.*;
 import database.dao.CityDAO;
 import database.dao.UserDAO;
-import database.daoimpl.PostgreUserDAO;
 import database.daoimpl.PostgreCityDAO;
+import database.daoimpl.PostgreUserDAO;
 import exceptions.FileReadException;
 import java.io.*;
 import java.net.*;
@@ -21,7 +20,6 @@ import model.City;
 import model.CityComparator;
 import storage.CityManager;
 import util.EnvReader;
-import util.IdGenerator;
 
 public class UDPServer {
   private static final int PORT = EnvReader.getPort("SERVER_PORT", 1488);
@@ -40,7 +38,6 @@ public class UDPServer {
     cityManager.loadAllFromDB(loadedCities);
     CommandManager commandManager =
         new CommandManager(cityManager, cityDAO, userDAO, cityComparator);
-    IdGenerator.init(cityManager.getAllIds());
 
     try (DatagramChannel channel = DatagramChannel.open()) {
       channel.configureBlocking(false);
@@ -91,11 +88,10 @@ public class UDPServer {
       ServerLogger.log("[REQUEST] От " + clientAddr + " → команда: " + request.getCommandName());
 
       readPool.submit(
-              () -> {
-                CommandResponse response = processRequest(request, commandManager, userDAO);
-                writePool.submit(() -> sendResponse(response, clientAddr, channel));
-              });
-
+          () -> {
+            CommandResponse response = processRequest(request, commandManager, userDAO);
+            writePool.submit(() -> sendResponse(response, clientAddr, channel));
+          });
 
     } catch (IOException | ClassNotFoundException e) {
       ServerLogger.log("[ERROR] Ошибка при обработке запроса: " + e.getMessage());
@@ -104,36 +100,31 @@ public class UDPServer {
 
   private static CommandResponse processRequest(
       CommandRequest request, CommandManager commandManager, UserDAO userDAO) {
+
     String cmdName = request.getCommandName();
-    var command = commandManager.get(cmdName);
+    Command command = commandManager.get(cmdName);
 
     if (command == null) {
       return new CommandResponse("Неизвестная команда: " + cmdName);
     }
 
-    if (!cmdName.equalsIgnoreCase("register")
-        && !cmdName.equalsIgnoreCase("login")
-        && !cmdName.equalsIgnoreCase("help")) {
-      String username = request.getUsername();
-      String password = request.getPassword();
-
-      if (username == null || password == null) {
-        return new CommandResponse("Ошибка авторизации: логин и пароль обязательны.");
-      }
-      UserRecord user = userDAO.getUserRecord(username);
-      if (user == null) {
-        return new CommandResponse("Ошибка авторизации: неверный логин или пароль.");
-      }
-
-      byte[] salt = PasswordHasher.hexToBytes(user.getSaltHex());
-      String computedHash = PasswordHasher.hash(password, salt);
-
-      if (!computedHash.equals(user.getPasswordHash())) {
-        return new CommandResponse("Ошибка авторизации: неверный логин или пароль.");
-      }
+    if (cmdName.equalsIgnoreCase("register")
+        || cmdName.equalsIgnoreCase("login")
+        || cmdName.equalsIgnoreCase("get_salt")
+        || cmdName.equalsIgnoreCase("help")) {
+      return command.execute(request);
     }
 
-    return command.execute(request);
+    String token = request.getSessionToken().orElse(null);
+    if (!AuthUtil.authorizeToken(request)) {
+      return new CommandResponse("Ошибка авторизации: недействительный токен.");
+    }
+
+    CommandRequest enrichedRequest =
+        new CommandRequest(
+            request.getCommandName(), request.getArguments(), request.getCity(), token);
+
+    return command.execute(enrichedRequest);
   }
 
   private static void sendResponse(

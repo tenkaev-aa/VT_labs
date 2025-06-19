@@ -20,7 +20,7 @@ public class ReplaceIfLowerCommand implements ClientCommand {
 
   @Override
   public String getName() {
-    return "replace_if_lower";
+    return "replace_if_lowe";
   }
 
   @Override
@@ -34,12 +34,18 @@ public class ReplaceIfLowerCommand implements ClientCommand {
       System.out.println("[CLIENT] Ошибка: укажите ID города для замены.");
       return;
     }
+    String idArg = args[0];
 
-    int id;
-    try {
-      id = Integer.parseInt(args[0]);
-    } catch (NumberFormatException e) {
-      System.out.println("[CLIENT] Ошибка: ID должен быть числом.");
+    CommandRequest checkRequest =
+        new CommandRequest(
+            "check_ownership",
+            new String[] {idArg},
+            (City) null,
+            CurrentSession.getToken().orElse(null));
+
+    CommandResponse checkResponse = sender.send(checkRequest);
+
+    if (!checkResponse.getMessage().equals("OK")) {
       return;
     }
 
@@ -47,11 +53,7 @@ public class ReplaceIfLowerCommand implements ClientCommand {
     City newCity = strategy.inputObject();
     CommandRequest request =
         new CommandRequest(
-            getName(),
-            new String[] {String.valueOf(id)},
-            newCity,
-            CurrentSession.getUsername(),
-            CurrentSession.getPassword());
+            getName(), new String[] {args[0]}, newCity, CurrentSession.getToken().orElse(null));
 
     CommandResponse response = sender.send(request);
   }

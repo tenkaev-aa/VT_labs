@@ -28,8 +28,7 @@ public class InsertCommand implements ClientCommand {
     City city = strategy.inputObject();
 
     CommandRequest request =
-        new CommandRequest(
-            "insert", args, city, CurrentSession.getUsername(), CurrentSession.getPassword());
+        new CommandRequest("insert", args, city, CurrentSession.getToken().orElse(null));
 
     CommandResponse response = sender.send(request);
   }

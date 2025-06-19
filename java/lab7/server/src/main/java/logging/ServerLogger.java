@@ -7,30 +7,47 @@ import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ServerLogger {
-  private static boolean loggingEnabled = false;
-  static String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+  private static final BlockingQueue<String> logQueue = new LinkedBlockingQueue<>();
+  private static final String date =
+      LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
   private static final String LOG_FILE = "logs/server-" + date + ".log";
+  private static volatile boolean loggingEnabled = false;
 
   private static PrintWriter writer;
 
   static {
     try {
-      String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-      File logFile = new File("logs/server-" + date + ".log");
-
+      File logFile = new File(LOG_FILE);
       File parentDir = logFile.getParentFile();
       if (parentDir != null && !parentDir.exists()) {
-        boolean created = parentDir.mkdirs();
-        if (!created) {
+        if (!parentDir.mkdirs()) {
           System.err.println("Не удалось создать папку логов: " + parentDir.getAbsolutePath());
         }
       }
 
       writer = new PrintWriter(new FileWriter(logFile, true));
+      Thread writerThread = new Thread(ServerLogger::processLogQueue);
+      writerThread.setDaemon(true);
+      writerThread.start();
     } catch (IOException e) {
       System.err.println("Ошибка инициализации логгера: " + e.getMessage());
+    }
+  }
+
+  private static void processLogQueue() {
+    try {
+      while (true) {
+        String entry = logQueue.take();
+        if (writer != null) {
+          writer.println(entry);
+          writer.flush();
+        }
+      }
+    } catch (InterruptedException ignored) {
     }
   }
 
@@ -41,9 +58,8 @@ public class ServerLogger {
 
     System.out.println(entry);
 
-    if (loggingEnabled && writer != null) {
-      writer.println(entry);
-      writer.flush();
+    if (loggingEnabled) {
+      logQueue.offer(entry);
     }
   }
 

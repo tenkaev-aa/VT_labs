@@ -8,4 +8,8 @@ public interface UserDAO {
   boolean checkCredentials(String username, String passwordHash);
 
   UserRecord getUserRecord(String username);
+
+  String getUsername(int userId);
+
+  int getUserId(String username);
 }

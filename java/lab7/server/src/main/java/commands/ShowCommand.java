@@ -9,6 +9,7 @@ import model.City;
 import network.CommandRequest;
 import network.CommandResponse;
 import storage.CityManager;
+import storage.CityWithOwnerName;
 
 public class ShowCommand implements Command {
 
@@ -32,11 +33,17 @@ public class ShowCommand implements Command {
     }
 
     List<City> sortedCities =
-        cityManager.getAllCities().stream()
-            .sorted(Comparator.comparing(City::getName))
-            .collect(Collectors.toList());
+        cityManager.getAllCities().stream().sorted(Comparator.comparing(City::getName)).toList();
 
-    return new CommandResponse("Элементы коллекции (по алфавиту):", sortedCities);
+    List<CityWithOwnerName> result =
+        sortedCities.stream()
+            .map(city -> new CityWithOwnerName(city, userDAO.getUsername(city.getOwnerId())))
+            .toList();
+
+    String output =
+        result.stream().map(CityWithOwnerName::toString).collect(Collectors.joining("\n"));
+
+    return new CommandResponse("Элементы коллекции (по алфавиту):\n" + output);
   }
 
   @Override

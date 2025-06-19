@@ -21,6 +21,10 @@ public interface Command {
     return false;
   }
 
+  default boolean isHidden() {
+    return false;
+  }
+
   /**
    * @return краткое описание команды
    */

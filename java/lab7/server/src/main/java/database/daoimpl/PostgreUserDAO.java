@@ -64,4 +64,29 @@ public class PostgreUserDAO implements UserDAO {
 
     return null;
   }
+
+  @Override
+  public String getUsername(int userId) {
+    String query = "SELECT username FROM users WHERE id = ?";
+    try (Connection conn = DatabaseManager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(query)) {
+
+      stmt.setInt(1, userId);
+      ResultSet rs = stmt.executeQuery();
+      if (rs.next()) {
+        return rs.getString("username");
+      }
+
+    } catch (SQLException e) {
+      System.err.println("[GET USERNAME ERROR] " + e.getMessage());
+    }
+
+    return null;
+  }
+
+  @Override
+  public int getUserId(String username) {
+    UserRecord user = getUserRecord(username);
+    return user != null ? user.id() : -1;
+  }
 }

@@ -1,17 +1,17 @@
-package auth;
+package network;
 
-import database.DatabaseManager;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import util.HashingConfig;
 
 public class PasswordHasher {
 
-  private static final int salt_length = DatabaseManager.getInt("salt.length", 8);
-  private static final int iterations = DatabaseManager.getInt("hash.iterations", 1488);
+  private static final int salt_length = HashingConfig.getSaltLength();
+  private static final int iterations = HashingConfig.getIterations();
 
-  public static byte[] generateSalt() {
+  public static byte[] getSalt() {
     byte[] salt = new byte[salt_length];
     new SecureRandom().nextBytes(salt);
     return salt;

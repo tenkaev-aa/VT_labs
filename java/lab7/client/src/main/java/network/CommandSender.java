@@ -20,15 +20,14 @@ public class CommandSender {
   }
 
   public void send(String commandName, String[] args, City city) {
-    String username = CurrentSession.getUsername();
-    String password = CurrentSession.getPassword();
+    String token = CurrentSession.getToken().orElse(null);
 
-    if (username == null || password == null) {
+    if (token == null) {
       System.out.println("[CLIENT] Вы не авторизованы. Используйте login/register.");
       return;
     }
 
-    CommandRequest request = new CommandRequest(commandName, args, city, username, password);
+    CommandRequest request = new CommandRequest(commandName, args, city, token);
     send(request);
   }
 
@@ -62,8 +61,9 @@ public class CommandSender {
               new ByteArrayInputStream(receiveBuffer.array(), 0, receiveBuffer.limit());
           ObjectInputStream ois = new ObjectInputStream(bais);
           CommandResponse response = (CommandResponse) ois.readObject();
-
-          System.out.println("[CLIENT] Ответ: " + response.getMessage());
+          if (!"get_salt".equalsIgnoreCase(request.getCommandName())) {
+            System.out.println("[CLIENT] Ответ: " + response.getMessage());
+          }
 
           if (response.getCities() != null && !response.getCities().isEmpty()) {
             response.getCities().forEach(System.out::println);

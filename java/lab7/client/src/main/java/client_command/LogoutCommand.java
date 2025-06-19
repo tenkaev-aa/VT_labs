@@ -13,7 +13,7 @@ public class LogoutCommand implements ClientCommand {
       return;
     }
 
-    String user = CurrentSession.getUsername();
+    String user = CurrentSession.getUsername().orElse(null);
     CurrentSession.logout();
     System.out.println("[CLIENT] Пользователь '" + user + "' вышел из системы.");
   }

@@ -29,6 +29,8 @@ public class CommandManager {
     commands.put("update", new UpdateCommand(cityManager, cityDAO, userDAO));
     commands.put("register", new RegisterCommand(userDAO));
     commands.put("login", new LoginCommand(userDAO));
+    commands.put("get_salt", new GetSaltCommand(userDAO));
+    commands.put("check_ownership", new CheckOwnershipCommand(cityManager, userDAO));
   }
 
   public Command get(String name) {

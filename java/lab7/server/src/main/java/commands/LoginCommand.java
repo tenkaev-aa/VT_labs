@@ -1,10 +1,11 @@
 package commands;
 
-import auth.PasswordHasher;
 import auth.UserRecord;
 import database.dao.UserDAO;
+import java.util.Collections;
 import network.CommandRequest;
 import network.CommandResponse;
+import session.SessionManager;
 
 public class LoginCommand implements Command {
   private final UserDAO userDAO;
@@ -15,11 +16,11 @@ public class LoginCommand implements Command {
 
   @Override
   public CommandResponse execute(CommandRequest request) {
-    String username = request.getUsername();
-    String password = request.getPassword();
+    String username = request.getUsername().orElse(null);
+    String providedHash = request.getPassword().orElse(null);
 
-    if (username == null || password == null || username.isBlank() || password.isBlank()) {
-      return new CommandResponse("Ошибка: укажите имя и пароль");
+    if (username == null || providedHash == null) {
+      return new CommandResponse("Ошибка: укажите имя и  пароль.");
     }
 
     UserRecord user = userDAO.getUserRecord(username);
@@ -27,11 +28,10 @@ public class LoginCommand implements Command {
       return new CommandResponse("Неверный логин или пароль");
     }
 
-    byte[] salt = PasswordHasher.hexToBytes(user.getSaltHex());
-    String computedHash = PasswordHasher.hash(password, salt);
-
-    if (computedHash.equals(user.getPasswordHash())) {
-      return new CommandResponse("Вход выполнен успешно");
+    String storedHash = user.passwordHash();
+    if (providedHash.equals(storedHash)) {
+      String token = SessionManager.createToken(username);
+      return new CommandResponse("Вход выполнен успешно", Collections.emptyList(), token);
     } else {
       return new CommandResponse("Неверный логин или пароль");
     }
