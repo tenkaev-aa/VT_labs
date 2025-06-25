@@ -4,6 +4,7 @@ import enums.Climate;
 import enums.Government;
 import enums.StandardOfLiving;
 import input_object.FieldInput;
+import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,34 +14,52 @@ import util.DateUtils;
  * Класс, представляющий город. Реализует интерфейс {@link Comparable}, что позволяет сортировать
  * объекты {@link City}.
  */
+@Entity
+@Table(name = "cities")
 public class City implements Comparable<City>, Serializable {
-  private Integer id;
-  private String name;
-  private Coordinates coordinates;
-  private LocalDateTime creationDate;
-  private Long area;
-  private Integer population;
-  private Float metersAboveSeaLevel;
-  private Climate climate;
-  private Government government;
-  private StandardOfLiving standardOfLiving;
-  private Human governor;
+
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Конструктор для создания объекта {@link City}.
-   *
-   * @param name Название города.
-   * @param coordinates Координаты города.
-   * @param creationDate Дата создания.
-   * @param area Площадь города.
-   * @param population Население города.
-   * @param metersAboveSeaLevel Высота над уровнем моря (может быть null).
-   * @param climate Климат города.
-   * @param government Форма правления города.
-   * @param standardOfLiving Уровень жизни.
-   * @param governor Губернатор города (может быть null).
-   */
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
+
+  @Column(nullable = false)
+  private String name;
+
+  @Embedded private Coordinates coordinates;
+
+  @Column(name = "creation_date", nullable = false)
+  private LocalDateTime creationDate;
+
+  @Column(nullable = false)
+  private Long area;
+
+  @Column(nullable = false)
+  private Integer population;
+
+  @Column(name = "meters_above_sea_level")
+  private Float metersAboveSeaLevel;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Climate climate;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Government government;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "standard_of_living", nullable = false)
+  private StandardOfLiving standardOfLiving;
+
+  @Embedded private Human governor;
+
+  @Column(name = "owner_id", nullable = false)
+  private int ownerId;
+
+  public City() {}
+
   public City(
       Integer id,
       String name,
@@ -54,9 +73,9 @@ public class City implements Comparable<City>, Serializable {
       StandardOfLiving standardOfLiving,
       Human governor) {
     this.id = id;
-    this.creationDate = creationDate;
     this.name = name;
     this.coordinates = coordinates;
+    this.creationDate = creationDate;
     this.area = area;
     this.population = population;
     this.metersAboveSeaLevel = metersAboveSeaLevel;
@@ -65,8 +84,6 @@ public class City implements Comparable<City>, Serializable {
     this.standardOfLiving = standardOfLiving;
     this.governor = governor;
   }
-
-  public City() {}
 
   /**
    * @return Уникальный идентификатор города.
@@ -153,8 +170,6 @@ public class City implements Comparable<City>, Serializable {
   public void setId(int id) {
     this.id = id;
   }
-
-  private int ownerId;
 
   public int getOwnerId() {
     return ownerId;

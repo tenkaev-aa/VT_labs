@@ -1,6 +1,8 @@
 package model;
 
 import input_object.FieldInput;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -10,10 +12,15 @@ import java.io.Serializable;
  * <p>Объект этого класса хранит координаты города в виде двух значений: - {@code x} — координата по
  * оси X (тип {@code double}). - {@code y} — координата по оси Y (тип {@code int}).
  */
+@Embeddable
 public class Coordinates implements Serializable {
+
   @Serial private static final long serialVersionUID = 2L;
 
+  @Column(name = "coordinates_x", nullable = false)
   private double x;
+
+  @Column(name = "coordinates_y", nullable = false)
   private int y;
 
   /**

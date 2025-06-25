@@ -1,5 +1,7 @@
 package model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -8,9 +10,12 @@ import java.io.Serializable;
  *
  * <p>Объект этого класса хранит информацию о росте человека. Рост должен быть больше 0. Для
  */
+@Embeddable
 public class Human implements Serializable {
+
   @Serial private static final long serialVersionUID = 3L;
 
+  @Column(name = "governor_height")
   private Float height;
 
   /**
