@@ -18,6 +18,8 @@ public class Human implements Serializable {
   @Column(name = "governor_height")
   private Float height;
 
+  public Human() {}
+
   /**
    * Создает новый объект человека с заданным ростом.
    *

@@ -23,6 +23,8 @@ public class Coordinates implements Serializable {
   @Column(name = "coordinates_y", nullable = false)
   private int y;
 
+  public Coordinates() {}
+
   /**
    * Создает новый объект координат с заданными значениями {@code x} и {@code y}.
    *

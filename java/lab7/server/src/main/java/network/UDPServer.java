@@ -4,8 +4,8 @@ import auth.AuthUtil;
 import commands.*;
 import database.dao.CityDAO;
 import database.dao.UserDAO;
-import database.daoimpl.PostgreCityDAO;
-import database.daoimpl.PostgreUserDAO;
+import database.daoimpl.HibernateCityDAO;
+import database.daoimpl.HibernateUserDAO;
 import exceptions.FileReadException;
 import java.io.*;
 import java.net.*;
@@ -32,8 +32,10 @@ public class UDPServer {
   public static void main(String[] args) throws FileReadException {
     CityManager cityManager = new CityManager();
     CityComparator cityComparator = new CityComparator();
-    UserDAO userDAO = new PostgreUserDAO();
-    CityDAO cityDAO = new PostgreCityDAO();
+    // UserDAO userDAO = new PostgreUserDAO();
+    // CityDAO cityDAO = new PostgreCityDAO();
+    UserDAO userDAO = new HibernateUserDAO();
+    CityDAO cityDAO = new HibernateCityDAO();
     Collection<City> loadedCities = cityDAO.findAll();
     cityManager.loadAllFromDB(loadedCities);
     CommandManager commandManager =

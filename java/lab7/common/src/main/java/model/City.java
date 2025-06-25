@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import util.DateUtils;
 
 /**
@@ -42,13 +44,16 @@ public class City implements Comparable<City>, Serializable {
   private Float metersAboveSeaLevel;
 
   @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(nullable = false)
   private Climate climate;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private Government government;
 
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Enumerated(EnumType.STRING)
   @Column(name = "standard_of_living", nullable = false)
   private StandardOfLiving standardOfLiving;
