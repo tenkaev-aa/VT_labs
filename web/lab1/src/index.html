@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Web lab1 — FastCGI </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<table class="page">
+    <tr>
+        <td>
+            <table class="header">
+                <tr>
+                    <td class="logo-cell"><div class="logo">ITMO</div></td>
+                    <td class="title-cell">
+                        <div class="title">Web lab1</div>
+                        <div class="subtitle">Студент: Тенькаев Артём Антонович • Группа: P3231 • Вариант: 472548</div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table class="content">
+                <tr>
+                    <!-- форма -->
+                    <td class="col form-col">
+                        <form id="hit-form" method="GET" action="/fcgi-bin/weblab1.jar" novalidate>
+                            <table class="form-table">
+                                <tr><th colspan="2">Ввод данных</th></tr>
+
+                                <tr>
+                                    <td class="label">X:</td>
+                                    <td>
+                                        <div class="x-buttons" id="x-buttons">
+                                            <button type="button" class="btn-x" data-x="-4">-4</button>
+                                            <button type="button" class="btn-x" data-x="-3">-3</button>
+                                            <button type="button" class="btn-x" data-x="-2">-2</button>
+                                            <button type="button" class="btn-x" data-x="-1">-1</button>
+                                            <button type="button" class="btn-x" data-x="0">0</button>
+                                            <button type="button" class="btn-x" data-x="1">1</button>
+                                            <button type="button" class="btn-x" data-x="2">2</button>
+                                            <button type="button" class="btn-x" data-x="3">3</button>
+                                            <button type="button" class="btn-x" data-x="4">4</button>
+                                        </div>
+                                        <input type="hidden" name="x" id="x-input">
+                                        <div class="hint">Выберите одно значение X</div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="label">Y:</td>
+                                    <td>
+                                        <input type="text" name="y" id="y-input" placeholder="-5.0 … 3.0" class="text-input">
+                                        <div class="hint">Число от -5.0 до 3.0</div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="label">R:</td>
+                                    <td>
+                                        <label class="check"><input type="checkbox" name="r" value="1" class="r-check">1</label>
+                                        <label class="check"><input type="checkbox" name="r" value="2" class="r-check">2</label>
+                                        <label class="check"><input type="checkbox" name="r" value="3" class="r-check">3</label>
+                                        <label class="check"><input type="checkbox" name="r" value="4" class="r-check">4</label>
+                                        <label class="check"><input type="checkbox" name="r" value="5" class="r-check">5</label>
+                                        <div class="hint">Выберите одно значение R</div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="label">SID (опц.):</td>
+                                    <td><input type="text" name="sid" id="sid-input" class="text-input" placeholder="например, dmitriq"></td>
+                                </tr>
+
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <button type="submit" id="submit-btn" class="btn-primary" disabled>Проверить</button>
+                                        <button type="button" id="reset-btn" class="btn-ghost">Сбросить</button>
+                                        <div id="msg" class="msg"></div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                    </td>
+
+                    <!-- графика -->
+                    <td class="col graph-col">
+                        <table class="graph-table">
+                            <tr><th>Область</th></tr>
+                            <tr><td class="canvas-cell"><canvas id="plot" width="420" height="420"></canvas></td></tr>
+                        </table>
+                    </td>
+
+                    <!-- информация и история -->
+                    <td class="col history-col">
+                        <table class="info-table">
+                            <tr><th>Информация</th></tr>
+                            <tr>
+                                <td>
+                                    <div>Время сервера: <span id="server-time">—</span></div>
+                                    <div>Время работы скрипта: <span id="exec-time">—</span> мс</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="history-table" id="history-table">
+                            <tr>
+                                <th>#</th><th>X</th><th>Y</th><th>R</th><th>Попадание</th><th>Время</th><th>SID</th>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+</table>
+
+<noscript>Для работы страницы нужен JavaScript.</noscript>
+<script defer src="app.js"></script>
+</body>
+</html>
