@@ -20,6 +20,36 @@ function validate(xHidden, yInput, rChecks, msg, submitBtn) {
   setMessage(msg, '', true);
   return true;
 }
+function lsKeyForSid(sid) {
+  const s = (sid && String(sid).trim()) || 'anonymous';
+  return `weblab1:history:${s}`;
+}
+function loadLocalHistory(sid) {
+  try {
+    const raw = localStorage.getItem(lsKeyForSid(sid));
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+function saveLocalHistory(sid, items) {
+  try {
+    localStorage.setItem(lsKeyForSid(sid), JSON.stringify(items));
+  } catch {}
+}
+function mergeServerHistoryIntoLocal(sid, serverItems) {
+  const local = loadLocalHistory(sid);
+  const key = h => `${h.x}|${h.y}|${h.r}|${h.ts || ''}|${h.sid || ''}`;
+  const seen = new Set(local.map(key));
+  const merged = local.slice();
+  for (const it of (serverItems || [])) {
+    const k = key(it);
+    if (!seen.has(k)) { merged.push(it); seen.add(k); }
+  }
+  saveLocalHistory(sid, merged);
+  return merged;
+}
+
 function getScale(SIZE, r) {
   return (SIZE * 0.42) / Math.max(5, r);
 }
@@ -181,7 +211,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('plot');
   const ctx = canvas.getContext('2d');
   const SIZE = canvas.width;
-
+  const initialSid = (sidInput.value || 'anonymous').trim() || 'anonymous';
+  const offline = loadLocalHistory(initialSid);
+  if (offline.length) {
+    fillHistory(historyTable, offline);
+  }
   //первичный рендер
   setMessage(msg, 'Готов к работе', true);
   validate(xHidden, yInput, rChecks, msg, submitBtn);
@@ -209,6 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
     validate(xHidden, yInput, rChecks, msg, submitBtn);
     redraw(ctx, SIZE, xHidden, yInput, rChecks, false);
   });
+   sidInput.addEventListener('input', () => {
+      const sidNow = (sidInput.value || 'anonymous').trim() || 'anonymous';
+      const off = loadLocalHistory(sidNow);
+      fillHistory(historyTable, off);
+    });
 
   // сброс
   resetBtn.addEventListener('click', () => {
@@ -227,12 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     if (!validate(xHidden, yInput, rChecks, msg, submitBtn)) return;
 
-    const params = new URLSearchParams({
-      x: xHidden.value,
-      y: yInput.value,
-      r: String(getR(rChecks)),
-      sid: sidInput.value || 'аноним'
-    });
+     const sidRaw = (sidInput.value || '').trim();
+        const params = new URLSearchParams({
+          x: xHidden.value,
+          y: yInput.value,
+          r: String(getR(rChecks))
+        });
+        if (sidRaw) params.set('sid', sidRaw);
 
     try {
       setMessage(msg, 'Отправка запроса…', true);
@@ -244,6 +284,8 @@ document.addEventListener('DOMContentLoaded', () => {
       execTimeEl.textContent = typeof data.data.execTimeMs === 'number'
         ? data.data.execTimeMs.toFixed(3) : '—';
       fillHistory(historyTable, data.history || []);
+      const sidStore = (sidInput.value || 'anonymous').trim() || 'anonymous';
+            saveLocalHistory(sidStore, data.history || []);
       setMessage(msg, 'Готово', true);
       redraw(ctx, SIZE, xHidden, yInput, rChecks, false);
     } catch (err) {
@@ -267,4 +309,13 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.insertCell(-1).textContent = h.sid || '';
     });
   }
+  const clearLocalBtn = document.getElementById('clear-local');
+    if (clearLocalBtn) {
+      clearLocalBtn.addEventListener('click', () => {
+        const sidNow = (sidInput.value || 'anonymous').trim() || 'anonymous';
+        saveLocalHistory(sidNow, []);
+        while (historyTable.rows.length > 1) historyTable.deleteRow(1);
+        setMessage(msg, 'Локальная история очищена', true);
+      });
+    }
 });

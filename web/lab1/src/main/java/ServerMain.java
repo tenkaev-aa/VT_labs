@@ -48,7 +48,8 @@ public final class ServerMain {
           HISTORY.add(p.x(), p.y(), p.r(), hit, sid);
 
           ApiResponse.Data data = ApiResponse.makeData(p.x(), p.y(), p.r(), hit, execMs);
-          List<HistoryStore.Entry> history = HISTORY.latest(50); //  latestBySid(sid, 50)
+          List<HistoryStore.Entry> history =
+              HISTORY.latestBySid(sid, 50); //  latestBySid(sid, 50) latest(50)
 
           write(200, Json.ok(data, history));
         } catch (IllegalArgumentException ex) {
