@@ -4,8 +4,8 @@ import core.ApiResponse;
 import core.HistoryStore;
 import java.util.List;
 
-public final class Json {
-  private Json() {}
+public final class JsonUtil {
+  private JsonUtil() {}
 
   public static String esc(String s) {
     if (s == null) return "null";
