@@ -3,12 +3,14 @@ package core;
 import java.util.Map;
 
 public record RequestParams(int x, double y, int r, String sid) {
+  public static final String SID_PARAM = "sid";
+  public static final String ANON = "anonymous";
 
   public static RequestParams parse(Map<String, String> q) {
     int x = parseIntInSet(q.get("x"), -4, -3, -2, -1, 0, 1, 2, 3, 4);
     double y = parseDoubleInRange(q.get("y"), -5.0, 3.0);
     int r = parseIntInSet(q.get("r"), 1, 2, 3, 4, 5);
-    String sid = (q.getOrDefault("sid", "").isBlank() ? "anonymous" : q.get("sid").trim());
+    String sid = (q.getOrDefault(SID_PARAM, "").isBlank() ? ANON : q.get(SID_PARAM).trim());
     return new RequestParams(x, y, r, sid);
   }
 

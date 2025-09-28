@@ -8,7 +8,9 @@ import core.RequestParams;
 final class PointService {
   private final HistoryStore history;
 
-  PointService(HistoryStore history) { this.history = history; }
+  PointService(HistoryStore history) {
+    this.history = history;
+  }
 
   ApiResponse process(RequestContext rc, long t0) {
     RequestParams p = RequestParams.parse(rc.query);

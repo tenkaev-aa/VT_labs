@@ -17,12 +17,12 @@ public final class HistoryStore {
     this.limit = Math.max(1, limit);
   }
 
-  public synchronized void add(int x, double y, int r, boolean hit, String sid) {
+  public void add(int x, double y, int r, boolean hit, String sid) {
     dq.addFirst(new Entry(x, y, r, hit, OffsetDateTime.now().toString(), sid));
     while (dq.size() > limit) dq.removeLast();
   }
 
-  public synchronized List<Entry> latest(int n) {
+  public List<Entry> latest(int n) {
     int need = Math.max(0, n);
     ArrayList<Entry> out = new ArrayList<>(Math.min(need, dq.size()));
     int i = 0;
@@ -33,7 +33,7 @@ public final class HistoryStore {
     return out;
   }
 
-  public synchronized List<Entry> latestBySid(String sid, int n) {
+  public List<Entry> latestBySid(String sid, int n) {
     int need = Math.max(0, n);
     ArrayList<Entry> out = new ArrayList<>();
     for (Entry e : dq) {
