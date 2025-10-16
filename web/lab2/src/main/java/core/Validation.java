@@ -85,7 +85,7 @@ public final class Validation {
     }
   }
 
-  public static Optional<Double> parseY(String s) {
+  private static Optional<Double> parseY(String s) {
     try {
       String t = trimmedNonEmpty(s);
       if (t.length() > 32) return Optional.empty();
@@ -97,7 +97,7 @@ public final class Validation {
     }
   }
 
-  public static Optional<Double> parseR(String[] rs) {
+  private static Optional<Double> parseR(String[] rs) {
     if (rs == null || rs.length != 1) return Optional.empty();
     try {
       double v = Double.parseDouble(trimmedNonEmpty(rs[0]).replace(',', '.'));

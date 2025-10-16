@@ -18,12 +18,6 @@ public class AreaCheckServlet extends HttpServlet {
   private static final String SESSION_HITS_ATTR = "hits";
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    req.getRequestDispatcher(INDEX_JSP).forward(req, resp);
-  }
-
-  @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
 

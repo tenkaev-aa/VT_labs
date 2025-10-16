@@ -163,6 +163,14 @@
                     </td>
                   </tr>
                 </table>
+                <script>
+                  window.initialHits = [
+                    <c:forEach var="h" items="${sessionScope.hits}" varStatus="st">
+                      { x: ${h.x}, y: ${h.y}, r: ${h.r}, hit: ${h.hit} }<c:if test="${!st.last}">,</c:if>
+                    </c:forEach>
+                  ];
+                </script>
+
 
                 <noscript>Для работы страницы нужен JavaScript.</noscript>
                 <script defer src="${pageContext.request.contextPath}/static/js/app.js"></script>

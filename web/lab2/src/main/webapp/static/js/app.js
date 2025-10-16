@@ -1,4 +1,4 @@
-
+ const points = Array.isArray(window.initialHits) ? window.initialHits.slice() : [];
 function setMessage(el, text, ok) {
   if (!el) return;
   el.className = 'msg ' + (ok ? 'ok' : 'error');
@@ -44,10 +44,22 @@ function validate(xHidden, yInput, rChecks, msg, submitBtn, opts = { clearOnOk: 
 }
 
 
-function getScale(SIZE, r) { return (SIZE * 0.42) / Math.max(3, r); }
+function getScale(SIZE) {
+  return (SIZE * 0.42) / 3;
+}
+
+function isHitClient(x, y, r) {
+
+  if (x >= 0 && y >= 0 && x <= r && y <= r) return true;
+
+  if (x <= 0 && y >= 0 && (x*x + y*y) <= (r*r)/4 + 1e-12) return true;
+
+  if (x >= 0 && y <= 0 && y >= x - r) return true;
+  return false;
+}
 
 function drawAxes(ctx, SIZE, r) {
-  const s = getScale(SIZE, r);
+  const s = getScale(SIZE);
   const AX = SIZE / 2, AY = SIZE / 2;
 
 
@@ -118,7 +130,7 @@ function drawAxes(ctx, SIZE, r) {
 
 
 function drawArea(ctx, SIZE, r) {
-  const s = getScale(SIZE, r);
+  const s = getScale(SIZE);
   ctx.save();
   ctx.translate(SIZE/2, SIZE/2);
   ctx.scale(1, -1);
@@ -141,22 +153,39 @@ function drawArea(ctx, SIZE, r) {
   ctx.restore();
 }
 
-function toCanvas(SIZE, x, y, r) { const s=getScale(SIZE,r); return [SIZE/2 + x*s, SIZE/2 - y*s]; }
-function fromCanvas(SIZE, cx, cy, r) { const s=getScale(SIZE,r); return [(cx - SIZE/2)/s, (SIZE/2 - cy)/s]; }
+function toCanvas(SIZE, x, y, r) { const s=getScale(SIZE); return [SIZE/2 + x*s, SIZE/2 - y*s]; }
+function fromCanvas(SIZE, cx, cy, r) { const s=getScale(SIZE); return [(cx - SIZE/2)/s, (SIZE/2 - cy)/s]; }
 
-function drawPoint(ctx,SIZE,x,y,r){
-  const [cx,cy]=toCanvas(SIZE,x,y,r);
-  ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill(); ctx.restore();
+function drawPoint(ctx, SIZE, x, y, r, color = '#111') {
+  const [cx, cy] = toCanvas(SIZE, x, y, r);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
 }
 
 function redraw(ctx, SIZE, xHidden, yInput, rChecks, clearOnly){
   const r = getR(rChecks) || 1;
+  const s = getScale(SIZE);
   const x = xHidden.value === '' ? null : Number(xHidden.value);
-  const y = yInput.value === '' ? null : Number((yInput.value||'').replace(',', '.'));
+  const y = yInput.value === '' ? null : Number((yInput.value || '').replace(',', '.'));
+
   ctx.clearRect(0,0,SIZE,SIZE);
   drawArea(ctx, SIZE, r);
   drawAxes(ctx, SIZE, r);
-  if (!clearOnly && Number.isInteger(x) && Number.isFinite(y)) drawPoint(ctx, SIZE, x, y, r);
+
+
+  for (const p of points) {
+    const color = isHitClient(p.x, p.y, r) ? '#1a7f37' : '#b42318';
+    drawPoint(ctx, SIZE, p.x, p.y, r, color);
+  }
+
+
+  if (!clearOnly && Number.isFinite(x) && Number.isFinite(y)) {
+    drawPoint(ctx, SIZE, x, y, r, '#111');
+  }
 }
 
 // --- main ---
