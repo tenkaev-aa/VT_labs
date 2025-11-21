@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<ui:composition template="/WEB-INF/templates/layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="title">Web lab 3 – старт</ui:define>
+
+    <ui:define name="content">
+
+        <h:form id="clockForm">
+
+            <table class="content">
+                <tr>
+                    <td class="col form-col">
+                        <table class="form-table">
+                            <thead>
+                            <tr>
+                                <th>Стартовая страница</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr>
+                                <td>
+
+                                    <p><b>Текущее время:</b></p>
+
+                                    <h:outputText id="now" value="#{clockBean.now}"/>
+
+                                    <p:poll interval="11" update="clockForm:now"/>
+
+                                    <p style="margin-top:18px;">
+                                        <h:link outcome="goApp" value="Перейти к основной странице"/>
+                                    </p>
+
+                                    <p class="hint" style="margin-top:12px;">
+                                        На основной странице можно вводить X, Y, R, смотреть график и историю попаданий.
+                                    </p>
+                                </td>
+                            </tr>
+                            </tbody>
+
+                        </table>
+                    </td>
+
+                    <td class="col graph-col"></td>
+                    <td class="col history-col"></td>
+                </tr>
+            </table>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+</html>

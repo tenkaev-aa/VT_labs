@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Проверка попадания</ui:define>
+
+    <ui:define name="content">
+
+
+        <h:form id="hit-form" prependId="false">
+
+            <table class="content">
+                <tr>
+
+                    <td class="col form-col">
+                        <table class="form-table">
+                            <thead>
+                            <tr>
+                                <th>Ввод данных</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <table>
+                                        <tr>
+                                            <!-- X -->
+                                            <td class="label">
+                                                <h:outputLabel for="x-input" value="X:"/>
+                                            </td>
+                                            <td>
+                                                <h:selectOneMenu id="x-input"
+                                                                 value="#{hitBean.x}"
+                                                                 style="width:120px">
+                                                    <f:selectItem itemLabel="—" itemValue="#{null}"/>
+                                                    <f:selectItem itemLabel="-4" itemValue="-4"/>
+                                                    <f:selectItem itemLabel="-3" itemValue="-3"/>
+                                                    <f:selectItem itemLabel="-2" itemValue="-2"/>
+                                                    <f:selectItem itemLabel="-1" itemValue="-1"/>
+                                                    <f:selectItem itemLabel="0"  itemValue="0"/>
+                                                    <f:selectItem itemLabel="1"  itemValue="1"/>
+                                                    <f:selectItem itemLabel="2"  itemValue="2"/>
+                                                    <f:selectItem itemLabel="3"  itemValue="3"/>
+                                                    <f:selectItem itemLabel="4"  itemValue="4"/>
+                                                </h:selectOneMenu>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <!-- Y -->
+                                            <td class="label">
+                                                <h:outputLabel for="y-input" value="Y:"/>
+                                            </td>
+                                            <td>
+                                                <h:inputText id="y-input"
+                                                             value="#{hitBean.YText}"
+                                                             styleClass="text-input"
+                                                             style="width:120px"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <!-- R -->
+                                            <td class="label">
+                                                <h:outputLabel for="r-input" value="R:"/>
+                                            </td>
+                                            <td>
+                                                <p:spinner id="r-input"
+                                                           value="#{hitBean.r}"
+                                                           min="0.1" max="3"
+                                                           stepFactor="0.1"
+                                                           size="6"
+                                                           onchange="window.redrawPlot &amp;&amp; window.redrawPlot();"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="label"></td>
+                                            <td>
+                                                <h:commandButton id="submit-btn"
+                                                                 value="Проверить"
+                                                                 action="#{hitBean.submit}"
+                                                                 styleClass="btn-primary"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="label">Время:</td>
+                                            <td>
+                                                <h:panelGroup id="execTimePanel">
+                                                    <h:outputText value="#{hitBean.lastExecMs}">
+                                                        <f:convertNumber maxFractionDigits="3"/>
+                                                    </h:outputText>
+                                                    <h:outputText value=" мс"/>
+                                                </h:panelGroup>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td colspan="2">
+                                                <h:messages id="facesMessages"
+                                                            globalOnly="true"
+                                                            showDetail="true"
+                                                            style="margin-top:8px;color:#c0392b;"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+
+                    <!--график-->
+                    <td class="col graph-col">
+                        <table class="graph-table">
+                            <thead>
+                            <tr>
+                                <th>Область и график</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td class="canvas-cell">
+                                    <canvas id="plot" width="420" height="420"></canvas>
+
+                                    <!-- сообщения валидации/подсказки из JS -->
+                                    <div id="msg" class="msg"></div>
+
+                                    <div class="hint">
+                                        * Клик по графику заполняет X и Y
+                                        (X округляется до целого в диапазоне -4..4),
+                                        затем отправляет форму.
+                                    </div>
+
+                                    <!-- история точек для JS -->
+                                    <h:outputScript target="body">
+
+                                        window.initialHits = [
+                                        <ui:repeat value="#{hitBean.results}" var="h" varStatus="st">
+                                            {x: #{h.x}, y: #{h.y}, r: #{h.r}, hit: #{h.hit}}#{st.last ? '' : ','}
+                                        </ui:repeat>
+                                        ];
+                                    </h:outputScript>
+
+                                    <h:outputScript library="js" name="app.js" target="body"/>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+
+                    <!-- таблица результатов-->
+                    <td class="col history-col">
+                        <table class="history-table">
+                            <thead>
+                            <tr>
+                                <th colspan="6">Результаты</th>
+                            </tr>
+                            <tr>
+                                <th>#</th>
+                                <th>X</th>
+                                <th>Y</th>
+                                <th>R</th>
+                                <th>Попадание</th>
+                                <th>Когда</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <ui:repeat value="#{hitBean.results}" var="r" varStatus="st">
+                                <tr>
+                                    <td><h:outputText value="#{st.index + 1}"/></td>
+                                    <td><h:outputText value="#{r.x}"/></td>
+                                    <td><h:outputText value="#{r.y}"/></td>
+                                    <td><h:outputText value="#{r.r}"/></td>
+                                    <td>
+                                        <h:outputText value="#{r.hit ? 'да' : 'нет'}"
+                                                      styleClass="#{r.hit ? 'hit-yes' : 'hit-no'}"/>
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{r.createdAtDate}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top:12px;">
+                            <h:commandLink value="На стартовую" action="goStart" styleClass="btn-ghost"/>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>
