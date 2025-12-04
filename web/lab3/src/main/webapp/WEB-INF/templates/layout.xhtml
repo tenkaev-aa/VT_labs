@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <title><ui:insert name="title">Web lab 3</ui:insert></title>
+
+
+    <h:outputStylesheet library="css" name="style.css"/>
+
+
+</h:head>
+
+<h:body>
+
+    <table class="page">
+        <tr>
+            <td>
+                <table class="header">
+                    <tr>
+                        <td class="logo-cell">
+                            <div class="logo">ITMO</div>
+                        </td>
+                        <td class="title-cell">
+                            <div class="title">Web lab 3</div>
+                            <div class="subtitle">
+                                Студент: Тенькаев Артём Антонович • Группа: P3231 • Вариант: 8394
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <ui:insert name="content"/>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+            </td>
+        </tr>
+    </table>
+
+</h:body>
+</html>
