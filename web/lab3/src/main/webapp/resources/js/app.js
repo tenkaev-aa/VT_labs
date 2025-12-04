@@ -54,7 +54,8 @@ function validate(xSelect, yInput, rInput, msg, submitBtn, opts = { clearOnOk: t
 
 
 function getScale(SIZE) {
-    return (SIZE * 0.42) / 5;
+    const BASE_RANGE = 5;
+    return (SIZE * 0.42) / BASE_RANGE;
 }
 
 
@@ -148,17 +149,17 @@ function drawArea(ctx, SIZE, r) {
     ctx.strokeStyle = 'rgba(78,161,255,0.95)';
     ctx.lineWidth = 1.5;
 
-
+    // прямоугольник
     ctx.beginPath();
     ctx.rect(0, 0, r * s, r * s);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-
+    // треугольник
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(-(r/2) * s, 0);
+    ctx.lineTo(-(r / 2) * s, 0);
     ctx.lineTo(0, r * s);
     ctx.closePath();
     ctx.fill();
@@ -205,8 +206,13 @@ function redraw(ctx, SIZE, xSelect, yInput, rInput, clearOnly) {
 
     // история
     for (const p of points) {
-        const color = isHitClient(p.x, p.y, r) ? '#1a7f37' : '#b42318';
-        drawPoint(ctx, SIZE, p.x, p.y, color);
+        const baseR = p.r && p.r > 0 ? p.r : 1;
+        const factor = r / baseR;
+        const drawX = p.x * factor;
+        const drawY = p.y * factor;
+
+        const color = isHitClient(drawX, drawY, r) ? '#1a7f37' : '#b42318';
+        drawPoint(ctx, SIZE, drawX, drawY, color);
     }
 
     // текущая точка
@@ -222,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const xSelect = document.getElementById('x-input');
     const yInput  = document.getElementById('y-input');
-
     const rInput =
         document.querySelector("input[id$='r-input_input']") ||
         document.querySelector("#r-input_input") ||
@@ -234,8 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const SIZE = canvas.width;
-
-    let canvasSubmitTimer = null;
 
     setMessage(msg, 'Готов к работе', true);
     validate(xSelect, yInput, rInput, msg, submitBtn);
@@ -278,15 +281,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const xSnap = Math.max(-4, Math.min(4, Math.round(x)));
         const yVal  = Math.max(-4.999, Math.min(4.999, Math.round(y * 1000) / 1000));
 
-
         xSelect.value = String(xSnap);
         yInput.value  = String(yVal);
 
         setMessage(msg, 'X округлён до ' + xSnap, true);
 
-        validate(xSelect, yInput, rInput, msg, submitBtn, { clearOnOk: false });
-        redraw(ctx, SIZE, xSelect, yInput, rInput, false);
-        if (validate(xSelect, yInput, rInput, msg, submitBtn)) {
+        if (validate(xSelect, yInput, rInput, msg, submitBtn, { clearOnOk: false })) {
+            redraw(ctx, SIZE, xSelect, yInput, rInput, false);
             submitBtn.click();
         }
     });
